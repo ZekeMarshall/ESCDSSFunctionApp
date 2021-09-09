@@ -105,10 +105,10 @@ server <- function(input, output) {
         shade_curve <- function(df, x, y, fill, zstart, zend, alpha){
             ggplot2::geom_area(data = dplyr::filter(df, 
                                                     x >= zstart,
-                                                    x < zend),
+                                                    x <= zend),
                                ggplot2::aes(y = y), 
                                fill = fill,
-                               color = NA, 
+                               color = "black", 
                                alpha = alpha)
         }
         
@@ -142,105 +142,84 @@ server <- function(input, output) {
             vline_5 <- qnorm(0.5 + (vs_range/2) + (s_range) + (m_range), mean = mean, sd = sd)
             vline_6 <- qnorm(0.5 - (vs_range/2) - (s_range) - (m_range), mean = mean, sd = sd)
             
+            
+            # Plot data
             p1 <- ggplot2::ggplot(data = norm_dist_rel, mapping = ggplot2::aes(x = x,
                                                                                y = y)) +
                 ggplot2::geom_line() +
                 shade_curve(df = norm_dist_rel,
                             x = x,
                             y = y,
+                            alpha = 1,
+                            zstart = vline_2, 
+                            zend = vline_1, 
+                            fill = vs_col) +
+                shade_curve(df = norm_dist_rel,
+                            x = x,
+                            y = y,
+                            alpha = 0.3,
+                            zstart = vline_4, 
+                            zend = vline_2, 
+                            fill = s_col) +
+                shade_curve(df = norm_dist_rel,
+                            x = x,
+                            y = y,
                             alpha = 0.3,
                             zstart = vline_1, 
-                            zend = vline_2, 
-                            fill = vs_col) +
+                            zend = vline_3, 
+                            fill = s_col) +
+                shade_curve(df = norm_dist_rel,
+                            x = x,
+                            y = y,
+                            alpha = 0.3,
+                            zstart = vline_3, 
+                            zend = vline_5, 
+                            fill = m_col) +
+                shade_curve(df = norm_dist_rel,
+                            x = x,
+                            y = y,
+                            alpha = 0.3,
+                            zstart = vline_6, 
+                            zend = vline_4, 
+                            fill = m_col) +
                 
-                
-                # ggplot2::geom_area(mapping = ggplot2::aes(x = x, y = y),
-                #                    fill = vs_col, 
-                #                    xlim = c(vline_1, vline_2)) +
+                # Add parametisation values
+                ggplot2::geom_point(data = params,
+                                    mapping = ggplot2::aes(x = x,
+                                                           y = y,
+                                                           color = "red",
+                                                           size = 12)) +
 
-                # # Very suitable area fill
-                # ggplot2::stat_function(fun = dnorm,
-                #                        geom = "area",
-                #                        fill = vs_col,
-                #                        alpha = 0.3,
-                #                        args = list(mean = mean, sd = sd),
-                #                        xlim = c(vline_1, vline_2)) +
-                # # Suitable area fill
-                # ggplot2::stat_function(fun = dnorm,
-                #                        geom = "area",
-                #                        fill = s_col,
-                #                        alpha = 0.3,
-                #                        args = list(mean = mean, sd = sd),
-                #                        xlim = c(vline_1, vline_3)) +
-                # ggplot2::stat_function(fun = dnorm,
-                #                        geom = "area",
-                #                        fill = s_col,
-                #                        alpha = 0.3,
-                #                        args = list(mean = mean, sd = sd),
-                #                        xlim = c(vline_2, vline_4)) +
-                # # Mildy suitable area fill
-                # ggplot2::stat_function(fun = dnorm,
-                #                        geom = "area",
-                #                        fill = m_col,
-                #                        alpha = 0.3,
-                #                        args = list(mean = mean, sd = sd),
-                #                        xlim = c(vline_3, vline_5)) +
-                # ggplot2::stat_function(fun = dnorm,
-                #                        geom = "area",
-                #                        fill = m_col,
-                #                        alpha = 0.3,
-                #                        args = list(mean = mean, sd = sd),
-                #                        xlim = c(vline_4, vline_6)) +
-                # # Unsuitable area fill
-                # ggplot2::stat_function(fun = dnorm,
-                #                        geom = "area",
-                #                        fill = u_col,
-                #                        alpha = 0.3,
-                #                        args = list(mean = mean, sd = sd),
-                #                        xlim = c(vline_5, 320)) +
-                # ggplot2::stat_function(fun = dnorm,
-                #                        geom = "area",
-                #                        fill = u_col,
-                #                        alpha = 0.3,
-                #                        args = list(mean = mean, sd = sd),
-                #                        xlim = c(0, vline_6)) +
-                
-            #     # Add parametisation values
-            #     ggplot2::geom_point(data = params,
-            #                         mapping = ggplot2::aes(x = x,
-            #                                                y = y,
-            #                                                color = "red",
-            #                                                size = 12)) +
-            #     
-            #     # Vertical suitability lines
-            #     ggplot2::geom_vline(xintercept = vline_1,
-            #                         size = 0.5,
-            #                         color = "grey") +
-            #     ggplot2::geom_vline(xintercept = vline_2,
-            #                         size = 0.5,
-            #                         color = "grey") +
-            #     ggplot2::geom_vline(xintercept = vline_3,
-            #                         size = 0.5,
-            #                         color = "grey") +
-            #     ggplot2::geom_vline(xintercept = vline_4,
-            #                         size = 0.5,
-            #                         color = "grey") +
-            #     ggplot2::geom_vline(xintercept = vline_5,
-            #                         size = 0.5,
-            #                         color = "grey") +
-            #     ggplot2::geom_vline(xintercept = vline_6,
-            #                         size = 0.5,
-            #                         color = "grey") +
-            #     ggplot2::coord_cartesian(xlim = c(0, 320),
-            #                              expand = FALSE) +
-            #     ggplot2::ggtitle(label = input$species,
-            #                      subtitle = input$suit_factor) +
-            #     ggplot2::scale_x_continuous(breaks = seq(0,320,20)) +
-            #     ggplot2::scale_x_continuous(breaks = c(0:1)) +
-            #     ggplot2::xlab(label = "Moisture Deficit (MD)") +
-            #     ggplot2::ylab(NULL) +
-            #     ggplot2::theme_classic(base_size = 16) +
-            #     ggplot2::theme(legend.position = "none") +
+                # Vertical suitability lines
+                ggplot2::geom_vline(xintercept = vline_1,
+                                    size = 0.5,
+                                    color = "grey") +
+                ggplot2::geom_vline(xintercept = vline_2,
+                                    size = 0.5,
+                                    color = "grey") +
+                ggplot2::geom_vline(xintercept = vline_3,
+                                    size = 0.5,
+                                    color = "grey") +
+                ggplot2::geom_vline(xintercept = vline_4,
+                                    size = 0.5,
+                                    color = "grey") +
+                ggplot2::geom_vline(xintercept = vline_5,
+                                    size = 0.5,
+                                    color = "grey") +
+                ggplot2::geom_vline(xintercept = vline_6,
+                                    size = 0.5,
+                                    color = "grey") +
+                ggplot2::coord_cartesian(xlim = c(0, 320),
+                                         ylim = c(0,1.1),
+                                         expand = FALSE) +
+                ggplot2::ggtitle(label = input$species,
+                                 subtitle = input$suit_factor) +
+                ggplot2::scale_x_continuous(breaks = seq(0,320,20)) +
+                ggplot2::scale_y_continuous(breaks = c(0:1)) +
+                ggplot2::xlab(label = "Moisture Deficit (MD)") +
+                ggplot2::ylab(NULL) +
+                ggplot2::theme_classic(base_size = 16) +
+                ggplot2::theme(legend.position = "none") +
                 NULL
 
 
