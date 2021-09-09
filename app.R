@@ -63,57 +63,20 @@ server <- function(input, output) {
             mean <- input$mean
             sd <- input$sd
             
-            at_x_vec <- c(0:320)
-
-            n <- 155
-
-            res <- dnorm(x =  at_x_vec, mean = as.numeric(mean), sd = as.numeric(sd))
-            ymax <- max(res)
-
-            # ***Change these to actual quartile values from res***
-            ymax_1q <- ymax*0.25
-            # ymax_1qy <- qnorm(.25, mean = 150, sd = 15)
-            ymax_2q <- ymax*0.5
-            ymax_3q <- ymax*0.75
-            
-            # Find points where ymax is above res
-            above_1q <- ymax_1q > res
-            above_2q <- ymax_2q > res
-            above_3q <- ymax_3q > res
-            
-            # Points always intersect when above=TRUE, then FALSE or reverse
-            intersect_points_1q <- which(diff(above_1q) != 0)
-            intersect_points_2q <- which(diff(above_2q) != 0)
-            intersect_points_3q <- which(diff(above_3q) != 0)
+            q1 <- qnorm(.25, mean = mean, sd = sd)
+            q2 <- qnorm(.50, mean = mean, sd = sd)
+            q3 <- qnorm(.75, mean = mean, sd = sd)
             
     
             p1 <- ggplot2::ggplot(data = data.frame(x = c(0, 320)), aes(x)) +
                 ggplot2::stat_function(fun = dnorm, n = 155, args = list(mean = mean, sd = sd)) +
-                ggplot2::geom_hline(yintercept = ymax_1q,
+                ggplot2::geom_vline(xintercept = q1,
                                     size = 0.5,
                                     color = "grey") +
-                ggplot2::geom_vline(xintercept = intersect_points_1q[1],
+                ggplot2::geom_vline(xintercept = q2,
                                     size = 0.5,
                                     color = "grey") +
-                ggplot2::geom_vline(xintercept = intersect_points_1q[2],
-                                    size = 0.5,
-                                    color = "grey") +
-                ggplot2::geom_hline(yintercept = ymax_2q,
-                                    size = 0.5,
-                                    color = "grey") +
-                ggplot2::geom_vline(xintercept = intersect_points_2q[1],
-                                    size = 0.5,
-                                    color = "grey") +
-                ggplot2::geom_vline(xintercept = intersect_points_2q[2],
-                                    size = 0.5,
-                                    color = "grey") +
-                ggplot2::geom_hline(yintercept = ymax_3q,
-                                    size = 0.5,
-                                    color = "grey") +
-                ggplot2::geom_vline(xintercept = intersect_points_3q[1],
-                                    size = 0.5,
-                                    color = "grey") +
-                ggplot2::geom_vline(xintercept = intersect_points_3q[2],
+                ggplot2::geom_vline(xintercept = q3,
                                     size = 0.5,
                                     color = "grey") +
                 ggplot2::theme_classic() +
@@ -126,6 +89,8 @@ server <- function(input, output) {
             p1
         
         }
+        
+        # output$suitTable
         
         
     })
