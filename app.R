@@ -35,11 +35,11 @@ ui <- dashboardPage(
                          label = "Function:",
                          choices = c("Normal Distribution" = "norm")
                      ),
-                     sliderInput("mean",
-                                 "Mean:",
-                                 min = 0,
-                                 max = 320,
-                                 value = 160),
+                     # sliderInput("mean",
+                     #             "Mean:",
+                     #             min = 0,
+                     #             max = 320,
+                     #             value = 160),
                      sliderInput("sd",
                                  "Spread:",
                                  min = 0,
@@ -76,18 +76,83 @@ ui <- dashboardPage(
             ),
             box(title = "Parameter Values",
                 width = 3,
-                numericInput(inputId = "x",
-                             label = "X value",
-                             value = 180),
-                numericInput(inputId = "y",
-                             label = "Y value",
-                             value = 0.8),
+                fluidRow(
+                    column(6,
+                           numericInput(inputId = "mean",
+                                        label = "X",
+                                        value = 160),
+                           numericInput(inputId = "x1",
+                                        label = NULL,
+                                        value = ""),
+                           numericInput(inputId = "x2",
+                                        label = NULL,
+                                        value = ""),
+                           numericInput(inputId = "x3",
+                                        label = NULL,
+                                        value = ""),
+                           numericInput(inputId = "x4",
+                                        label = NULL,
+                                        value = ""),
+                           numericInput(inputId = "x5",
+                                        label = NULL,
+                                        value = ""),
+                           numericInput(inputId = "x6",
+                                        label = NULL,
+                                        value = "")
+                           ),
+                    column(6,
+                           numericInput(inputId = "ymean",
+                                        label = "Y",
+                                        value = 1),
+                           numericInput(inputId = "y1",
+                                        label = NULL,
+                                        value = ""),
+                           numericInput(inputId = "y2",
+                                        label = NULL,
+                                        value = ""),
+                           numericInput(inputId = "y3",
+                                        label = NULL,
+                                        value = ""),
+                           numericInput(inputId = "y4",
+                                        label = NULL,
+                                        value = ""),
+                           numericInput(inputId = "y5",
+                                        label = NULL,
+                                        value = ""),
+                           numericInput(inputId = "y6",
+                                        label = NULL,
+                                        value = ""),
+                           )
+                ),
                 collapsible = FALSE
             ),
             box(title = "Suitability Data",
                 width = 12,
                 gt_output("suitTable"),
-                collapsible = FALSE)
+                collapsible = FALSE),
+            box(title = "Notes",
+                width = 12,
+                collapsible = FALSE,
+                tags$h3("Process"),
+                tags$ol(
+                    tags$li("Select a suitability factor"),
+                    tags$li("Select a function (norm, norm-rskew, norm-lskew,...."),
+                    tags$li("Select a mean/peak suitability value"), 
+                    tags$li("Enter parameter data points")
+                ),
+                tags$h3("Questions"),
+                tags$ul(
+                    tags$li("What do the 0-1 scores mean? We can either fix
+                            them at intervals which correspond to the suitability
+                            categories; or ignore these values and set the ranges 
+                            manually using the sliders, but then we might as well 
+                            just be selecting the ranges without a curve!"), 
+                    tags$li("Second list item"), 
+                    tags$li("Third list item")
+                )
+                
+                
+            )
         )
     )
 )
@@ -131,8 +196,21 @@ server <- function(input, output) {
         if(input$function_type == "norm"){
             
             # Create parameters
-            params <- data.frame(x = input$x,
-                                 y = input$y)
+            params <- data.frame(x = c(input$mean,
+                                       input$x1,
+                                       input$x2,
+                                       input$x3,
+                                       input$x4,
+                                       input$x5,
+                                       input$x6),
+                                 y = c(input$ymean,
+                                       input$y1,
+                                       input$y2,
+                                       input$y3,
+                                       input$y4,
+                                       input$y5,
+                                       input$y6)
+                                 )
             
             
             # Retrieve mean and standard deviation inputs
@@ -218,12 +296,6 @@ server <- function(input, output) {
                                                            y = y,
                                                            color = "red",
                                                            size = 12)) +
-                ggplot2::geom_point(data = data.frame(y = 1,
-                                                      x = mean),
-                                    mapping = ggplot2::aes(x = x,
-                                                           y = y,
-                                                           color = "red",
-                                                           size = 12)) +
 
                 # Vertical suitability lines
                 ggplot2::geom_vline(xintercept = vline_1,
@@ -246,19 +318,14 @@ server <- function(input, output) {
                                     color = "grey") +
                 
                 # Horizontal suitability lines
-                ggplot2::geom_hline(yintercept = 
+                ggplot2::geom_hline(yintercept =
                                         dplyr::filter(norm_dist_rel,
-                                                      abs(x-vline_1) == min(abs(x-vline_1))) |> 
-                                        dplyr::select(y) |> 
+                                                      abs(x-vline_1) == min(abs(x-vline_1))) |>
+                                        dplyr::select(y) |>
                                         as.numeric(),
                                     size = 0.5,
                                     color = "grey") +
-                
-                ggplot2::geom_text(ggplot2::aes(x = vline_1, 
-                                                y = 1, 
-                                                label = format(round(vline_1, 1), nsmall = 1), 
-                                                hjust = -0.1)) +
-                
+
                 ggplot2::geom_hline(yintercept =
                                         dplyr::filter(norm_dist_rel,
                                                       abs(x-vline_3) == min(abs(x-vline_3))) |>
@@ -266,12 +333,7 @@ server <- function(input, output) {
                                         as.numeric(),
                                     size = 0.5,
                                     color = "grey") +
-                
-                ggplot2::geom_text(ggplot2::aes(x = vline_3, 
-                                                y = 1, 
-                                                label = format(round(vline_3, 1), nsmall = 1), 
-                                                hjust = -0.1)) +
-                
+
                 ggplot2::geom_hline(yintercept =
                                         dplyr::filter(norm_dist_rel,
                                                       abs(x-vline_5) == min(abs(x-vline_5))) |>
@@ -279,6 +341,25 @@ server <- function(input, output) {
                                         as.numeric(),
                                     size = 0.5,
                                     color = "grey") +
+            
+                # ggplot2::geom_hline(yintercept = 0.25) + 
+                # 
+                # ggplot2::geom_hline(yintercept = 0.50) +
+                # 
+                # ggplot2::geom_hline(yintercept = 0.75) +
+                
+                # Labels
+                
+                ggplot2::geom_text(ggplot2::aes(x = vline_1, 
+                                                y = 1, 
+                                                label = format(round(vline_1, 1), nsmall = 1), 
+                                                hjust = -0.1)) +
+                
+                
+                ggplot2::geom_text(ggplot2::aes(x = vline_3, 
+                                                y = 1, 
+                                                label = format(round(vline_3, 1), nsmall = 1), 
+                                                hjust = -0.1)) +
                 
                 
                 # Graph attributes
