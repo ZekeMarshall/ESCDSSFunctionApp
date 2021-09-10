@@ -1,15 +1,12 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
+# This app aims to provide users with the ability to determine suitability of 
+# tree species to different environmental conditions based on fitting functions
+# to user defined suitability 'scores' and manual judgement.
 
 library(shiny)
 library(ggplot2)
 library(bs4Dash)
+library(gt)
+library(janitor)
 
 # Define suitability colors
 vs_col <- "#9ec7a9"
@@ -81,12 +78,16 @@ ui <- dashboardPage(
                 width = 3,
                 numericInput(inputId = "x",
                              label = "X value",
-                             value = 160),
+                             value = 180),
                 numericInput(inputId = "y",
                              label = "Y value",
-                             value = 1),
+                             value = 0.8),
                 collapsible = FALSE
-            )
+            ),
+            box(title = "Suitability Data",
+                width = 12,
+                gt_output("suitTable"),
+                collapsible = FALSE)
         )
     )
 )
@@ -99,9 +100,23 @@ server <- function(input, output) {
 
     output$suitPlot <- renderPlot({
         
+        # Determine subtitle
+        if(input$suit_factor == "md"){
+            subtitle = "Moisture Deficit"
+        } else if(input$suit_factor == "at"){
+            subtitle = "Accumulated Temperature"
+        } else if(input$suit_factor == "ct"){
+            subtitle = "Continentality"
+        } else if(input$suit_factor == "dams"){
+            subtitle = "Exposure"
+        } else if(input$suit_factor == "smr"){
+            subtitle = "Soil Moisture Regime"
+        } else if(input$suit_factor == "snr"){
+            subtitle = "Soil Nutrient Regime"
+        }
+        
         # Define shading function
         # Adapted from: https://sebastiansauer.github.io/shade_Normal_curve/
-        
         shade_curve <- function(df, x, y, fill, zstart, zend, alpha){
             ggplot2::geom_area(data = dplyr::filter(df, 
                                                     x >= zstart,
@@ -157,34 +172,54 @@ server <- function(input, output) {
                 shade_curve(df = norm_dist_rel,
                             x = x,
                             y = y,
-                            alpha = 0.3,
+                            alpha = 1,
                             zstart = vline_4, 
                             zend = vline_2, 
                             fill = s_col) +
                 shade_curve(df = norm_dist_rel,
                             x = x,
                             y = y,
-                            alpha = 0.3,
+                            alpha = 1,
                             zstart = vline_1, 
                             zend = vline_3, 
                             fill = s_col) +
                 shade_curve(df = norm_dist_rel,
                             x = x,
                             y = y,
-                            alpha = 0.3,
+                            alpha = 1,
                             zstart = vline_3, 
                             zend = vline_5, 
                             fill = m_col) +
                 shade_curve(df = norm_dist_rel,
                             x = x,
                             y = y,
-                            alpha = 0.3,
+                            alpha = 1,
                             zstart = vline_6, 
                             zend = vline_4, 
                             fill = m_col) +
+                shade_curve(df = norm_dist_rel,
+                            x = x,
+                            y = y,
+                            alpha = 1,
+                            zstart = 0, 
+                            zend = vline_6, #ifelse statements
+                            fill = u_col) +
+                shade_curve(df = norm_dist_rel,
+                            x = x,
+                            y = y,
+                            alpha = 1,
+                            zstart = vline_5, 
+                            zend = 320, 
+                            fill = u_col) +
                 
                 # Add parametisation values
                 ggplot2::geom_point(data = params,
+                                    mapping = ggplot2::aes(x = x,
+                                                           y = y,
+                                                           color = "red",
+                                                           size = 12)) +
+                ggplot2::geom_point(data = data.frame(y = 1,
+                                                      x = mean),
                                     mapping = ggplot2::aes(x = x,
                                                            y = y,
                                                            color = "red",
@@ -209,14 +244,51 @@ server <- function(input, output) {
                 ggplot2::geom_vline(xintercept = vline_6,
                                     size = 0.5,
                                     color = "grey") +
-                ggplot2::coord_cartesian(xlim = c(0, 320),
+                
+                # Horizontal suitability lines
+                ggplot2::geom_hline(yintercept = 
+                                        dplyr::filter(norm_dist_rel,
+                                                      abs(x-vline_1) == min(abs(x-vline_1))) |> 
+                                        dplyr::select(y) |> 
+                                        as.numeric(),
+                                    size = 0.5,
+                                    color = "grey") +
+                
+                ggplot2::geom_text(ggplot2::aes(x = vline_1, 
+                                                y = 1, 
+                                                label = format(round(vline_1, 1), nsmall = 1), 
+                                                hjust = -0.1)) +
+                
+                ggplot2::geom_hline(yintercept =
+                                        dplyr::filter(norm_dist_rel,
+                                                      abs(x-vline_3) == min(abs(x-vline_3))) |>
+                                        dplyr::select(y) |>
+                                        as.numeric(),
+                                    size = 0.5,
+                                    color = "grey") +
+                
+                ggplot2::geom_text(ggplot2::aes(x = vline_3, 
+                                                y = 1, 
+                                                label = format(round(vline_3, 1), nsmall = 1), 
+                                                hjust = -0.1)) +
+                
+                ggplot2::geom_hline(yintercept =
+                                        dplyr::filter(norm_dist_rel,
+                                                      abs(x-vline_5) == min(abs(x-vline_5))) |>
+                                        dplyr::select(y) |>
+                                        as.numeric(),
+                                    size = 0.5,
+                                    color = "grey") +
+                
+                
+                # Graph attributes
+                ggplot2::coord_cartesian(xlim = c(0, 330),
                                          ylim = c(0,1.1),
                                          expand = FALSE) +
-                ggplot2::ggtitle(label = input$species,
-                                 subtitle = input$suit_factor) +
+                ggplot2::ggtitle(label = input$species) +
                 ggplot2::scale_x_continuous(breaks = seq(0,320,20)) +
-                ggplot2::scale_y_continuous(breaks = c(0:1)) +
-                ggplot2::xlab(label = "Moisture Deficit (MD)") +
+                ggplot2::scale_y_continuous(breaks = seq(0,1,0.1)) +
+                ggplot2::xlab(label = subtitle) +
                 ggplot2::ylab(NULL) +
                 ggplot2::theme_classic(base_size = 16) +
                 ggplot2::theme(legend.position = "none") +
@@ -230,26 +302,70 @@ server <- function(input, output) {
         
     })
     
-    # output$suitTable <- renderTable({
-    #     
-    #     mean <- input$mean
-    #     sd <- input$sd
-    #     
-    #     vs_range <- input$vs_range
-    #     s_range <- input$s_range
-    #     m_range <- input$m_range
-    #     # u_range <- input$u_range
-    #     
-    #     vline_1 <- qnorm(0.5 + (vs_range/2), mean = mean, sd = sd)
-    #     vline_2 <- qnorm(0.5 - (vs_range/2), mean = mean, sd = sd)
-    #     vline_3 <- qnorm(0.5 + (vs_range/2) + (s_range/2), mean = mean, sd = sd)
-    #     vline_4 <- qnorm(0.5 - (vs_range/2) - (s_range/2), mean = mean, sd = sd)
-    #     vline_5 <- qnorm(0.5 + (vs_range/2) + (s_range/2) + (m_range/2), mean = mean, sd = sd)
-    #     vline_6 <- qnorm(0.5 - (vs_range/2) - (s_range/2) - (m_range/2), mean = mean, sd = sd)
-    #     
-    #     df <- 
-    #     
-    # })
+    output$suitTable <- render_gt({
+        
+        # Retrieve mean and standard deviation inputs
+        mean <-  input$mean
+        sd <-  input$sd
+        
+        # Retrieve user-stipulated suitability ranges
+        vs_range <- input$vs_range
+        s_range <-  input$s_range
+        m_range <-  input$m_range
+        
+        # Create x intercepts for suitability ranges
+        vline_1 <- qnorm(0.5 + (vs_range/2), mean = mean, sd = sd)
+        vline_2 <- qnorm(0.5 - (vs_range/2), mean = mean, sd = sd)
+        vline_3 <- qnorm(0.5 + (vs_range/2) + (s_range), mean = mean, sd = sd)
+        vline_4 <- qnorm(0.5 - (vs_range/2) - (s_range), mean = mean, sd = sd)
+        vline_5 <- qnorm(0.5 + (vs_range/2) + (s_range) + (m_range), mean = mean, sd = sd)
+        vline_6 <- qnorm(0.5 - (vs_range/2) - (s_range) - (m_range), mean = mean, sd = sd)
+        
+        df <- data.frame(x = c(0:320)) |> 
+            dplyr::mutate(
+                suitability = 
+                    dplyr::case_when(
+                        # Very suitable
+                        x <= vline_1 & x >= vline_2 ~ "Very suitable",
+                        x > vline_1 & x <= vline_3 ~ "Suitable",
+                        x < vline_2 & x >= vline_4 ~ "Suitable",
+                        x < vline_4 & x >= vline_6 ~ "Mildly suitable",
+                        x > vline_3 & x <= vline_5 ~ "Mildly suitable",
+                        x < vline_5 ~ "Unsuitable",
+                        x > vline_6 ~ "Unsuitable",
+                        TRUE ~ as.character(x)
+                )
+            )
+
+
+        # Create data frame
+        df_table <- df |>
+            dplyr::filter(x %in% seq(0, 320, 20))
+        
+        df_table_t <- df_table |>
+            data.table::transpose() |>
+            janitor::row_to_names(1)
+        
+        # Create table
+        table <- gt::gt(df_table_t) |> 
+            gt::data_color(
+                columns = gt::everything(),
+                color = scales::col_factor(
+                    palette = c(vs_col, s_col, m_col, u_col),
+                    levels = c("Very suitable", "Suitable", "Mildly suitable", "Unsuitable")
+                    )
+            ) |> 
+            gt::cols_align(
+                align = c("center"),
+                columns = gt::everything()
+            ) |> 
+            gt::tab_options(table.width = "100%")
+            
+        
+        # Print table
+        table 
+        
+    })
 }
 
 # Run the application 
