@@ -5,15 +5,15 @@ params <- data.frame(x = c(0,
                            200,
                            240,
                            320
-),
-y = c(0.2,
-      0.4,
-      0.6,
-      1,
-      0.6,
-      0.4
-)
-)
+                      ),
+                      y = c(0.2,
+                            0.4,
+                            0.6,
+                            1,
+                            0.6,
+                            0.4
+                      )
+                      )
 
 model <- lm(data = params,
             y ~ poly(x, 3)) #input$poly_num
@@ -22,21 +22,6 @@ params_fit <- data.frame(x = seq(0:320),
                          y = predict(object = model, data.frame(x = seq(0:320))))
 
 
-
-# https://stackoverflow.com/questions/52650467/how-to-estimate-x-value-from-y-value-input-after-approxfun-in-r?noredirect=1&lq=1
-RootNonlinearInterpolant <- function (x, y, f, y0 = 0) {
-  if (is.unsorted(x)) {
-    ind <- order(x)
-    x <- x[ind]; y <- y[ind]
-  }
-  z <- y - y0
-  k <- which(z[-1] * z[-length(z)] < 0)
-  nk <- length(k)
-  xk <- numeric(nk)
-  F <- function (x) f(x) - y0
-  for (i in 1:nk) xk[i] <- uniroot(F, c(x[k[i]], x[k[i] + 1]))$root
-  xk
-}
 
 y0=0.5
 f <- splinefun(params_fit$x, params_fit$y)
@@ -62,12 +47,6 @@ vs_high <- lines.75[2]
 
 
 fit_plot <- ggplot2::ggplot() +
-  
-  # Add parametisation points
-  ggplot2::geom_point(data = params,
-                      mapping = ggplot2::aes(x = x,
-                                             y = y,
-                                             size = 0.5)) +
   
   # Add fitted data
   ggplot2::geom_line(data = params_fit,
@@ -107,14 +86,69 @@ fit_plot <- ggplot2::ggplot() +
                       size = 0.25,
                       color = "grey") +
   
-  # Shade areas
+  # Unsuitable area fill
+  shade_curve(df = params_fit,
+              x = x,
+              y = y,
+              alpha = 0.5,
+              zstart = 0, 
+              zend = m_low, 
+              fill = "red") +
+  shade_curve(df = params_fit,
+              x = x,
+              y = y,
+              alpha = 0.5,
+              zstart = 320, 
+              zend = 320, 
+              fill = "red") +
+  
+  # Mildly suitable area fill
   shade_curve(df = params_fit,
               x = x,
               y = y,
               alpha = 0.5,
               zstart = m_low, 
               zend = s_low, 
-              fill = "red") +
+              fill = "orange") +
+  shade_curve(df = params_fit,
+              x = x,
+              y = y,
+              alpha = 0.5,
+              zstart = s_high, 
+              zend = 320, 
+              fill = "orange") +
+  
+  # Suitable area fill
+  shade_curve(df = params_fit,
+              x = x,
+              y = y,
+              alpha = 0.5,
+              zstart = s_low, 
+              zend = vs_low, 
+              fill = "lightgreen") +
+  shade_curve(df = params_fit,
+              x = x,
+              y = y,
+              alpha = 0.5,
+              zstart = vs_high, 
+              zend = s_high, 
+              fill = "lightgreen") +
+  
+  # Very suitable area fill
+  shade_curve(df = params_fit,
+              x = x,
+              y = y,
+              alpha = 0.5,
+              zstart = vs_low, 
+              zend = vs_high, 
+              fill = "green") +
+  
+  # Add parametisation points
+  ggplot2::geom_point(data = params,
+                      mapping = ggplot2::aes(x = x,
+                                             y = y,
+                                             size = 0.5)) +
+  
   
   
   # Plot options
