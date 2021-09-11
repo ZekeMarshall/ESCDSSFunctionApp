@@ -7,6 +7,12 @@ library(ggplot2)
 library(bs4Dash)
 library(gt)
 library(janitor)
+library(plotly)
+library(equatiomatic)
+
+# Load modules
+source("Modules/functions.R", local = TRUE)
+# source("Modules/loess.R", local = TRUE)
 
 # Define suitability colors
 vs_col <- "#9ec7a9"
@@ -19,7 +25,7 @@ ui <- dashboardPage(
     dashboardHeader(title = "ESC-DSS Function Generator"),
     dashboardSidebar(textInput(inputId = "species", 
                                label = "Species", 
-                               value = ""),
+                               value = "Eucalyptus glaucescens"),
                      selectInput(
                          inputId = "suit_factor",
                          label = "Suitability Factor:",
@@ -33,13 +39,15 @@ ui <- dashboardPage(
                      selectInput(
                          inputId = "function_type",
                          label = "Function:",
-                         choices = c("Normal Distribution" = "norm")
+                         choices = c("Normal Distribution" = "norm",
+                                     "Loess" = "loess",
+                                     "Polynomial" = "poly")
                      ),
-                     # sliderInput("mean",
-                     #             "Mean:",
-                     #             min = 0,
-                     #             max = 320,
-                     #             value = 160),
+                     numericInput(
+                         inputId = "poly_num",
+                         label = "Poly Num:",
+                         value = 1
+                     ),
                      sliderInput("sd",
                                  "Spread:",
                                  min = 0,
@@ -59,19 +67,17 @@ ui <- dashboardPage(
                                  "Mildy Suitable Range:",
                                  min = 0,
                                  max = 0.5,
-                                 value = 0.125)#,
-                     # sliderInput("u_bound",
-                     #             "Unsuitable Bound:",
-                     #             min = 0,
-                     #             max = 0.5,
-                     #             value = 0.25)
+                                 value = 0.125)
     ),
     dashboardBody(
         # Boxes need to be put in a row (or column)
         fluidRow(
+            withMathJax(), # Initialize mathJax so the equation renders properly
             box(title = "Suitability Function Generator",
-                width =9,
-                plotOutput("suitPlot"),
+                width = 9,
+                height = 660,
+                plotlyOutput("suitPlot"),
+                eqOutput("ploy_eq"),
                 collapsible = FALSE
             ),
             box(title = "Parameter Values",
@@ -82,50 +88,80 @@ ui <- dashboardPage(
                                         label = "Peak X Value",
                                         value = 160),
                            numericInput(inputId = "x1",
-                                        label = "X Parameters",
-                                        value = ""),
+                                        label = NULL,
+                                        value = 20),
                            numericInput(inputId = "x2",
                                         label = NULL,
-                                        value = ""),
+                                        value = 60),
                            numericInput(inputId = "x3",
                                         label = NULL,
-                                        value = ""),
+                                        value = 90),
                            numericInput(inputId = "x4",
                                         label = NULL,
-                                        value = ""),
+                                        value = 120),
                            numericInput(inputId = "x5",
                                         label = NULL,
-                                        value = ""),
+                                        value = 140),
                            numericInput(inputId = "x6",
                                         label = NULL,
-                                        value = "")
+                                        value = 160),
+                           numericInput(inputId = "x7",
+                                        label = NULL,
+                                        value = 180),
+                           numericInput(inputId = "x8",
+                                        label = NULL,
+                                        value = 230),
+                           numericInput(inputId = "x9",
+                                        label = NULL,
+                                        value = 260),
+                           numericInput(inputId = "x10",
+                                        label = NULL,
+                                        value = 290)
                            ),
                     column(6,
                            numericInput(inputId = "ymean",
                                         label = "Peak Y Value",
                                         value = 1),
                            numericInput(inputId = "y1",
-                                        label = "Y Parameters",
-                                        value = ""),
+                                        label = NULL,
+                                        value = 1),
                            numericInput(inputId = "y2",
                                         label = NULL,
-                                        value = ""),
+                                        value = 1),
                            numericInput(inputId = "y3",
                                         label = NULL,
-                                        value = ""),
+                                        value = 1),
                            numericInput(inputId = "y4",
                                         label = NULL,
-                                        value = ""),
+                                        value = 1),
                            numericInput(inputId = "y5",
                                         label = NULL,
-                                        value = ""),
+                                        value = 1),
                            numericInput(inputId = "y6",
                                         label = NULL,
-                                        value = ""),
+                                        value = 1),
+                           numericInput(inputId = "y7",
+                                        label = NULL,
+                                        value = 1),
+                           numericInput(inputId = "y8",
+                                        label = NULL,
+                                        value = 0.85),
+                           numericInput(inputId = "y9",
+                                        label = NULL,
+                                        value = 0.6),
+                           numericInput(inputId = "y10",
+                                        label = NULL,
+                                        value = 0.3)
                            )
                 ),
                 collapsible = FALSE
             ),
+            # withMathJax(), # Initialize mathJax so the equation renders properly
+            # box(title = NULL,
+            #     width = 12,
+            #     eqOutput("ploy_eq"),
+            #     collapsible = FALSE
+            # ),
             box(title = "Suitability Data",
                 width = 12,
                 gt_output("suitTable"),
@@ -163,7 +199,7 @@ server <- function(input, output) {
     
     
 
-    output$suitPlot <- renderPlot({
+    output$suitPlot <- renderPlotly({
         
         # Determine subtitle
         if(input$suit_factor == "md"){
@@ -178,18 +214,6 @@ server <- function(input, output) {
             subtitle = "Soil Moisture Regime"
         } else if(input$suit_factor == "snr"){
             subtitle = "Soil Nutrient Regime"
-        }
-        
-        # Define shading function
-        # Adapted from: https://sebastiansauer.github.io/shade_Normal_curve/
-        shade_curve <- function(df, x, y, fill, zstart, zend, alpha){
-            ggplot2::geom_area(data = dplyr::filter(df, 
-                                                    x >= zstart,
-                                                    x <= zend),
-                               ggplot2::aes(y = y), 
-                               fill = fill,
-                               color = "black", 
-                               alpha = alpha)
         }
         
         
@@ -295,7 +319,7 @@ server <- function(input, output) {
                                     mapping = ggplot2::aes(x = x,
                                                            y = y,
                                                            color = "red",
-                                                           size = 12)) +
+                                                           size = 10)) +
 
                 # Vertical suitability lines
                 ggplot2::geom_vline(xintercept = vline_1,
@@ -374,12 +398,161 @@ server <- function(input, output) {
                 ggplot2::theme_classic(base_size = 16) +
                 ggplot2::theme(legend.position = "none") +
                 NULL
-
-
-
-            p1
+            
+            # Print plot
+            plotly::ggplotly(p1, height = 600)
         
+        } else if(input$function_type == "poly"){
+            
+            # Create parameters
+            params <- data.frame(x = c(input$x1,
+                                       input$x2,
+                                       input$x3,
+                                       input$x4,
+                                       input$x5,
+                                       input$x6,
+                                       input$x7,
+                                       input$x8,
+                                       input$x9,
+                                       input$x10
+                                 ),
+                                 y = c(input$y1,
+                                       input$y2,
+                                       input$y3,
+                                       input$y4,
+                                       input$y5,
+                                       input$y6,
+                                       input$y7,
+                                       input$y8,
+                                       input$y9,
+                                       input$y10
+                                 )
+                                 )
+            
+            # Create parameters
+            params <- data.frame(x = c(0,
+                                       80,
+                                       120,
+                                       200,
+                                       240,
+                                       320
+                                       ),
+                                 y = c(0.2,
+                                       0.4,
+                                       0.6,
+                                       1,
+                                       0.6,
+                                       0.4
+                                       )
+                                )
+            
+            model <- lm(data = params,
+                        y ~ poly(x, 3)) #input$poly_num
+            
+            params_fit <- data.frame(x = seq(0:320), 
+                                     y = predict(object = model, data.frame(x = seq(0:320))))
+
+
+            fit_plot <- ggplot2::ggplot() +
+                
+                # Add parametisation points
+                ggplot2::geom_point(data = params,
+                                    mapping = ggplot2::aes(x = x,
+                                                           y = y,
+                                                           color = "red",
+                                                           size = 10)) +
+                
+                # Add fitted data
+                ggplot2::geom_line(data = params_fit,
+                                   mapping = ggplot2::aes(x = x,
+                                                          y = y),
+                                   size = 0.5) +
+                
+                # Horizontal suitability lines
+                ggplot2::geom_hline(yintercept = 0.25,
+                                    size = 0.5,
+                                    color = "grey") +
+                ggplot2::geom_hline(yintercept = 0.50,
+                                    size = 0.5,
+                                    color = "grey") +
+                ggplot2::geom_hline(yintercept = 0.75,
+                                    size = 0.5,
+                                    color = "grey") +
+
+                
+                # Vertical range lines
+                # vline_1 <- predict(object = model, data = data.frame(y = 0.25))
+ 
+                
+                # Plot options
+                ggplot2::coord_cartesian(xlim = c(0, 330),
+                                         ylim = c(0,1.1),
+                                         expand = FALSE) +
+                ggplot2::ggtitle(label = input$species) +
+                ggplot2::scale_x_continuous(breaks = seq(0,320,20)) +
+                ggplot2::scale_y_continuous(breaks = seq(0,1,0.1)) +
+                ggplot2::xlab(label = subtitle) +
+                ggplot2::ylab(NULL) +
+                ggplot2::theme_classic(base_size = 16) +
+                ggplot2::theme(legend.position = "none") +
+                NULL
+            
+            plotly::ggplotly(fit_plot, height = 600)
+            
+            
+            
         }
+        
+    })
+    
+    output$ploy_eq <- renderEq({
+        
+        # Create parameters
+        params <- data.frame(x = c(input$x1,
+                                   input$x2,
+                                   input$x3,
+                                   input$x4,
+                                   input$x5,
+                                   input$x6,
+                                   input$x7,
+                                   input$x8,
+                                   input$x9,
+                                   input$x10
+                             ),
+                             y = c(input$y1,
+                                   input$y2,
+                                   input$y3,
+                                   input$y4,
+                                   input$y5,
+                                   input$y6,
+                                   input$y7,
+                                   input$y8,
+                                   input$y9,
+                                   input$y10
+                            )
+        )
+        
+        # Create parameters
+        # params <- data.frame(x = c(0,
+        #                            80,
+        #                            120,
+        #                            200,
+        #                            240,
+        #                            320
+        #                            ),
+        #                      y = c(0.2,
+        #                            0.4,
+        #                            0.6,
+        #                            1,
+        #                            0.6,
+        #                            0.4
+        #                            )
+        #                     )
+        
+        model <- lm(data = params,
+                    y ~ poly(x, input$poly_num))
+        
+        equatiomatic::extract_eq(model, use_coefs = TRUE, coef_digits = 4) 
         
     })
     
