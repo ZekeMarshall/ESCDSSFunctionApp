@@ -25,3 +25,5 @@ RootNonlinearInterpolant <- function (x, y, f, y0 = 0) {
   for (i in 1:nk) xk[i] <- uniroot(F, c(x[k[i]], x[k[i] + 1]))$root
   xk
 }
+
+# Get suitability ranges
