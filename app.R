@@ -13,6 +13,8 @@ library(equatiomatic)
 # Load modules
 source("Modules/functions.R", local = TRUE)
 
+# Read default scores data
+
 # Define suitability colors
 vs_col <- "#9ec7a9"
 s_col <- "#EFFFAC"
@@ -25,7 +27,10 @@ line_col <- "black"
 # Define horizontal and vertical line size
 line_size <- 0.15
 
+# Establish default list of species
 
+
+# User interface
 ui <- dashboardPage(
     dashboardHeader(
         title = "ESC-DSS Suitability Tool"
@@ -239,6 +244,40 @@ ui <- dashboardPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
     
+    # # These observe events update the variables for selection
+    # observeEvent(input$suit_factor,  {
+    #     
+    #     req(input$suit_factor)
+    # 
+    #     # Determine maximum x axis value
+    #     if(input$suit_factor == "md"){
+    #         max_x = 320
+    #     } else if(input$suit_factor == "at"){
+    #         max_x = 3000
+    #     } else if(input$suit_factor == "ct"){
+    #         max_x = 12
+    #     } else if(input$suit_factor == "dams"){
+    #         max_x = 24
+    #     } else if(input$suit_factor == "smr"){
+    #         max_x = 8
+    #     } else if(input$suit_factor == "snr"){
+    #         max_x = 6
+    #     }
+    #     
+    # })
+    # 
+    # # These observe events update the variables for selection
+    # observeEvent(input$species,  {
+    #     req(input$species)
+    #     req(input$suit_factor)
+    #     
+    #     updateNumericInput(session,
+    #                        inputId = "x1",
+    #                        choices = dplyr::filter(default_scores, 
+    #                                                species == input$species,
+    #                                                suit_factor == input$suit_factor,
+    #                                                x = ""))
+    # })
     
 
     output$suitPlot <- renderPlot(height = 550,{
