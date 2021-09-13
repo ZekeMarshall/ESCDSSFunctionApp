@@ -28,7 +28,7 @@ line_size <- 0.15
 
 ui <- dashboardPage(
     dashboardHeader(
-        title = "ESC-DSS Function Generator"
+        title = "ESC-DSS Suitability Tool"
         ),
     
     dashboardSidebar(
