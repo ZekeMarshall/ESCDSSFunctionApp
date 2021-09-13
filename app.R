@@ -7,18 +7,23 @@ library(ggplot2)
 library(bs4Dash)
 library(gt)
 library(janitor)
-library(plotly)
+# library(plotly)
 library(equatiomatic)
 
 # Load modules
 source("Modules/functions.R", local = TRUE)
-# source("Modules/loess.R", local = TRUE)
 
 # Define suitability colors
 vs_col <- "#9ec7a9"
 s_col <- "#EFFFAC"
 m_col <- "#FFE9AC"
 u_col <- "#FFACAC"
+
+# Define horizontal and vertical line color
+line_col <- "black"
+
+# Define horizontal and vertical line size
+line_size <- 0.15
 
 
 ui <- dashboardPage(
@@ -249,22 +254,6 @@ server <- function(input, output) {
             # Set axis min and max values
             max_x <- 320
             
-            # params <- data.frame(x = c(0,
-            #                            80,
-            #                            120,
-            #                            200,
-            #                            240,
-            #                            320
-            #                            ),
-            #                      y = c(0.2,
-            #                            0.4,
-            #                            0.6,
-            #                            1,
-            #                            0.6,
-            #                            0.4
-            #                            )
-            #                     )
-            
             # # Create parameters
             # params <- data.frame(x = c(20,
             #                            60,
@@ -292,7 +281,7 @@ server <- function(input, output) {
             
             
             
-            
+            # Create a polynomial model to fit suitability score parameters
             model <- lm(data = params,
                         y ~ poly(x, input$poly_num)) #input$poly_num
             
@@ -372,100 +361,103 @@ server <- function(input, output) {
             
             fit_plot <- ggplot2::ggplot() +
                 
-                # Add fitted data
-                ggplot2::geom_line(data = params_fit,
-                                   mapping = ggplot2::aes(x = x,
-                                                          y = y),
-                                   size = 0.5) +
-                
-                # Horizontal suitability lines
-                ggplot2::geom_hline(yintercept = 0.25,
-                                    size = 0.25,
-                                    color = "grey") +
-                ggplot2::geom_hline(yintercept = 0.50,
-                                    size = 0.25,
-                                    color = "grey") +
-                ggplot2::geom_hline(yintercept = 0.75,
-                                    size = 0.25,
-                                    color = "grey") +
-                
-                
-                # Vertical range lines
-                ggplot2::geom_vline(xintercept = ifelse(is.numeric(m_low), m_low, 0),
-                                    size = 0.25,
-                                    color = "grey") +
-                ggplot2::geom_vline(xintercept = ifelse(is.numeric(s_low), s_low, 0),
-                                    size = 0.25,
-                                    color = "grey") +
-                ggplot2::geom_vline(xintercept = ifelse(is.numeric(vs_low), vs_low, 0),
-                                    size = 0.25,
-                                    color = "grey") +
-                ggplot2::geom_vline(xintercept = ifelse(is.numeric(vs_high), vs_high, max_x),
-                                    size = 0.25,
-                                    color = "grey") +
-                ggplot2::geom_vline(xintercept = ifelse(is.numeric(s_high), s_high, max_x),
-                                    size = 0.25,
-                                    color = "grey") +
-                ggplot2::geom_vline(xintercept = ifelse(is.numeric(m_high), m_high, max_x),
-                                    size = 0.25,
-                                    color = "grey") +
-                
                 # Unsuitable area fill
                 shade_curve(df = params_fit,
                             x = x,
                             y = y,
-                            alpha = 0.5,
+                            alpha = 1,
                             zstart = ifelse(lines.0_low < vs_low & lines.0_low > 0, lines.0_low, 0),
                             zend = ifelse(is.na(m_low), 0, m_low),  
-                            fill = "red") +
+                            fill = u_col) +
                 shade_curve(df = params_fit,
                             x = x,
                             y = y,
-                            alpha = 0.5,
+                            alpha = 1,
                             zstart = ifelse(is.na(m_high), max_x, m_high),
                             zend = ifelse(is.na(lines.0_high), max_x, lines.0_high),
-                            fill = "red") +
+                            fill = u_col) +
                 
                 # Mildly suitable area fill
                 shade_curve(df = params_fit,
                             x = x,
                             y = y,
-                            alpha = 0.5,
+                            alpha = 1,
                             zstart = ifelse(is.na(m_low), 0, m_low),
                             zend = ifelse(is.na(s_low), 0, s_low),
-                            fill = "orange") +
+                            fill = m_col) +
                 shade_curve(df = params_fit,
                             x = x,
                             y = y,
-                            alpha = 0.5,
+                            alpha = 1,
                             zstart = ifelse(is.na(s_high), max_x, s_high),
                             zend = ifelse(is.na(m_high), max_x, m_high),
-                            fill = "orange") +
+                            fill = m_col) +
                 
                 # Suitable area fill
                 shade_curve(df = params_fit,
                             x = x,
                             y = y,
-                            alpha = 0.5,
+                            alpha = 1,
                             zstart = ifelse(is.na(s_low), 0, s_low),
                             zend = ifelse(is.na(vs_low), 0, vs_low),
-                            fill = "lightgreen") +
+                            fill = s_col) +
                 shade_curve(df = params_fit,
                             x = x,
                             y = y,
-                            alpha = 0.5,
+                            alpha = 1,
                             zstart = ifelse(is.na(vs_high), max_x, vs_high),
                             zend = ifelse(is.na(s_high), max_x, s_high),
-                            fill = "lightgreen") +
+                            fill = s_col) +
                 
                 # Very suitable area fill
                 shade_curve(df = params_fit,
                             x = x,
                             y = y,
-                            alpha = 0.5,
+                            alpha = 1,
                             zstart = ifelse(is.na(vs_low), 0, vs_low),  
                             zend = ifelse(is.na(vs_high), max_x, vs_high),  
-                            fill = "green") +
+                            fill = vs_col) +
+                
+                # Horizontal suitability lines
+                ggplot2::geom_hline(yintercept = 0.25,
+                                    size = line_size,
+                                    color = line_col) +
+                ggplot2::geom_hline(yintercept = 0.50,
+                                    size = line_size,
+                                    color = line_col) +
+                ggplot2::geom_hline(yintercept = 0.75,
+                                    size = line_size,
+                                    color = line_col) +
+                ggplot2::geom_hline(yintercept = 1,
+                                    size = line_size,
+                                    color = line_col) +
+                
+                
+                # Vertical range lines
+                ggplot2::geom_vline(xintercept = ifelse(is.numeric(m_low), m_low, 0),
+                                    size = line_size,
+                                    color = line_col) +
+                ggplot2::geom_vline(xintercept = ifelse(is.numeric(s_low), s_low, 0),
+                                    size = line_size,
+                                    color = line_col) +
+                ggplot2::geom_vline(xintercept = ifelse(is.numeric(vs_low), vs_low, 0),
+                                    size = line_size,
+                                    color = line_col) +
+                ggplot2::geom_vline(xintercept = ifelse(is.numeric(vs_high), vs_high, max_x),
+                                    size = line_size,
+                                    color = line_col) +
+                ggplot2::geom_vline(xintercept = ifelse(is.numeric(s_high), s_high, max_x),
+                                    size = line_size,
+                                    color = line_col) +
+                ggplot2::geom_vline(xintercept = ifelse(is.numeric(m_high), m_high, max_x),
+                                    size = line_size,
+                                    color = line_col) +
+                
+                # Add fitted data
+                ggplot2::geom_line(data = params_fit,
+                                   mapping = ggplot2::aes(x = x,
+                                                          y = y),
+                                   size = 0.5) +
                 
                 # Add parametisation points
                 ggplot2::geom_point(data = params,
@@ -545,23 +537,24 @@ server <- function(input, output) {
                                    input$x8,
                                    input$x9,
                                    input$x10
-        ),
-        y = c(input$y1,
-              input$y2,
-              input$y3,
-              input$y4,
-              input$y5,
-              input$y6,
-              input$y7,
-              input$y8,
-              input$y9,
-              input$y10
-        )
-        )
+                                   ),
+                             y = c(input$y1,
+                                   input$y2,
+                                   input$y3,
+                                   input$y4,
+                                   input$y5,
+                                   input$y6,
+                                   input$y7,
+                                   input$y8,
+                                   input$y9,
+                                   input$y10
+                                   )
+                             )
         
         # Set axis min and max values
         max_x <- 320
         
+        # Create a polynomial model to fit suitability score parameters
         model <- lm(data = params,
                     y ~ poly(x, input$poly_num)) #input$poly_num
         
