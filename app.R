@@ -27,8 +27,44 @@ line_size <- 0.15
 
 
 ui <- dashboardPage(
-    dashboardHeader(title = "ESC-DSS Function Generator"),
-    dashboardSidebar(textInput(inputId = "species", 
+    dashboardHeader(
+        title = "ESC-DSS Function Generator"
+        ),
+    
+    dashboardSidebar(
+        
+        # sidebarMenu(
+        #     id = "sidebarMenu",
+        #     menuItem(
+        #         text = "Moisture Deficit",
+        #         tabName = "md"
+        #     ),
+        #     menuItem(
+        #         text = "Accumulated Temperature",
+        #         tabName = "at"
+        #     ),
+        #     menuItem(
+        #         text = "Continetaliity",
+        #         tabName = "ct"
+        #     ),
+        #     menuItem(
+        #         text = "Exposure",
+        #         tabName = "dams"
+        #     ),
+        #     menuItem(
+        #         text = "Soil Moisture Regime",
+        #         tabName = "smr"
+        #     ),
+        #     menuItem(
+        #         text = "Soil Nutrient Regime",
+        #         tabName = "snr"
+        #     ),
+        # )
+        
+        
+        
+        
+        textInput(inputId = "species", 
                                label = "Species", 
                                value = "Eucalyptus glaucescens"),
                      selectInput(
@@ -44,8 +80,7 @@ ui <- dashboardPage(
                      selectInput(
                          inputId = "function_type",
                          label = "Function:",
-                         choices = c("Polynomial" = "poly",
-                                     "Normal Distribution" = "norm")
+                         choices = c("Polynomial" = "poly")
                      ),
                      numericInput(
                          inputId = "poly_num",
