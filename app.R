@@ -1,6 +1,6 @@
 # This app aims to provide users with the ability to determine suitability of 
 # tree species to different environmental conditions based on fitting functions
-# to user defined suitability 'scores' and manual judgement.
+# to user defined suitability 'scores'.
 
 library(shiny)
 library(ggplot2)
