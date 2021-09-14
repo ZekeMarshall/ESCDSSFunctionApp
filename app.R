@@ -1,5 +1,5 @@
-# This app aims to provide users with the ability to determine suitability of 
-# tree species to different environmental conditions based on fitting functions
+# This app aims to provide users with the ability to determine suitability gradients
+# of tree species to different environmental conditions based on fitting functions
 # to user defined suitability 'scores'.
 
 library(shiny)
@@ -14,7 +14,8 @@ library(equatiomatic)
 # Load modules
 source("Modules/functions.R", local = TRUE)
 source("Modules/constants.R", local = TRUE)
-source("Modules/md.R", local = TRUE)
+source("Modules/suitability.R", local = TRUE)
+source("Modules/data.R", local = TRUE)
 
 # User interface
 ui <- dashboardPage(
@@ -68,7 +69,24 @@ ui <- dashboardPage(
         tabItems(
 
             tabItem(tabName = "md",
-                    mdUI(id = "md.id"))
+                    suitUI(id = "md.id"))
+            
+            # tabItem(tabName = "at",
+            #         suitUI(id = "at.id")),
+            # 
+            # tabItem(tabName = "ct",
+            #         suitUI(id = "ct.id")),
+            # 
+            # tabItem(tabName = "dams",
+            #         suitUI(id = "dams.id")),
+            # 
+            # tabItem(tabName = "smr",
+            #         suitUI(id = "smr.id")),
+            # 
+            # tabItem(tabName = "snr",
+            #         suitUI(id = "snr.id")),
+            
+            
 
         ) # Close tabItems
     
@@ -80,8 +98,37 @@ ui <- dashboardPage(
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
     
-    callModule(module = md,
-               id = "md.id")
+    callModule(module = suit,
+               id = "md.id",
+               suit_factor = "Moisture deficit",
+               max_x = 320)
+    
+    # callModule(module = suit,
+    #            id = "at.id",
+    #            suit_factor = "Accumulated temperature",
+    #            max_x = 320)
+    # 
+    # callModule(module = suit,
+    #            id = "md.id",
+    #            suit_factor = "Moisture deficit",
+    #            max_x = 320)
+    # 
+    # callModule(module = suit,
+    #            id = "md.id",
+    #            suit_factor = "Moisture deficit",
+    #            max_x = 320)
+    # 
+    # callModule(module = suit,
+    #            id = "md.id",
+    #            suit_factor = "Moisture deficit",
+    #            max_x = 320)
+    # 
+    # callModule(module = suit,
+    #            id = "md.id",
+    #            suit_factor = "Moisture deficit",
+    #            max_x = 320)
+    
+    
     
 } # Close server
 

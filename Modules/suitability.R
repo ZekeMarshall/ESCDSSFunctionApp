@@ -1,5 +1,5 @@
 # Establishes UI module function
-mdUI <- function(id) {
+suitUI <- function(id) {
   
   ns <- NS(id)
   
@@ -15,7 +15,7 @@ mdUI <- function(id) {
     ),
     
     box(title = "Options",
-        width = 12,
+        width = 3,
         
         textInput(inputId = ns("species"), 
                   label = "Species", 
@@ -23,8 +23,8 @@ mdUI <- function(id) {
         
         numericInput(
           inputId = ns("poly_num"),
-          label = "Poly Num:",
-          value = 3
+          label = "Polynomial Order:",
+          value = 4
           )
         
         ),
@@ -56,13 +56,19 @@ mdUI <- function(id) {
                                 value = 180),
                    numericInput(inputId = ns("x8"),
                                 label = NULL,
-                                value = 230),
+                                value = 200),
                    numericInput(inputId = ns("x9"),
                                 label = NULL,
-                                value = 260),
+                                value = 230),
                    numericInput(inputId = ns("x10"),
                                 label = NULL,
-                                value = 290)
+                                value = 260),
+                   numericInput(inputId = ns("x11"),
+                                label = NULL,
+                                value = 290),
+                   numericInput(inputId = ns("x12"),
+                                label = NULL,
+                                value = 320)
             ),
             column(6,
                    numericInput(inputId = ns("y1"),
@@ -109,19 +115,31 @@ mdUI <- function(id) {
                                 min = 0),
                    numericInput(inputId = ns("y8"),
                                 label = NULL,
-                                value = 0.85,
+                                value = 1,
                                 step = 0.1,
                                 max = 1,
                                 min = 0),
                    numericInput(inputId = ns("y9"),
                                 label = NULL,
-                                value = 0.6,
+                                value = 0.85,
                                 step = 0.1,
                                 max = 1,
                                 min = 0),
                    numericInput(inputId = ns("y10"),
                                 label = NULL,
+                                value = 0.6,
+                                step = 0.1,
+                                max = 1,
+                                min = 0),
+                   numericInput(inputId = ns("y11"),
+                                label = NULL,
                                 value = 0.3,
+                                step = 0.1,
+                                max = 1,
+                                min = 0),
+                   numericInput(inputId = ns("y12"),
+                                label = NULL,
+                                value = 0,
                                 step = 0.1,
                                 max = 1,
                                 min = 0)
@@ -177,7 +195,7 @@ mdUI <- function(id) {
 }
 
 # Establishes the server module function
-md <- function(input, output, session) {
+suit <- function(input, output, session, suit_factor, max_x) {
   
    
   # # These observe events update the variables for selection
@@ -193,33 +211,47 @@ md <- function(input, output, session) {
   
   
   # Create reactive objects
-  max_x <- 320
+  # max_x <- 320
   
   params <- reactive({
     
-    data.frame(x = c(input$x1,
-                     input$x2,
-                     input$x3,
-                     input$x4,
-                     input$x5,
-                     input$x6,
-                     input$x7,
-                     input$x8,
-                     input$x9,
-                     input$x10
-    ),
-    y = c(input$y1,
-          input$y2,
-          input$y3,
-          input$y4,
-          input$y5,
-          input$y6,
-          input$y7,
-          input$y8,
-          input$y9,
-          input$y10
-    )
-    )
+    params <- data.frame(x = c(input$x1,
+                               input$x2,
+                               input$x3,
+                               input$x4,
+                               input$x5,
+                               input$x6,
+                               input$x7,
+                               input$x8,
+                               input$x9,
+                               input$x10,
+                               input$x11,
+                               input$x12
+                            
+                               ), # Close x values
+                         y = c(input$y1,
+                               input$y2,
+                               input$y3,
+                               input$y4,
+                               input$y5,
+                               input$y6,
+                               input$y7,
+                               input$y8,
+                               input$y9,
+                               input$y10,
+                               input$y11,
+                               input$y12
+                               ) # Close y values
+                
+                ) # Close data frame
+    
+    params <- params |>
+      dplyr::filter(!is.na(x)) |> 
+      dplyr::filter(!is.na(y))
+    
+    return(params)
+    
+    
   })
   
   
@@ -364,21 +396,19 @@ md <- function(input, output, session) {
       
       
       # Plot options
-      ggplot2::coord_cartesian(xlim = c(0, 330),
+      ggplot2::coord_cartesian(xlim = c(0, (max_x*1.05)),
                                ylim = c(0,1.1),
                                expand = FALSE) +
       ggplot2::ggtitle(label = input$species) +
       ggplot2::scale_x_continuous(breaks = seq(0,max_x,20)) +
       ggplot2::scale_y_continuous(breaks = seq(0,1,0.1)) +
-      ggplot2::xlab(label = "Moisture deficit") +
+      ggplot2::xlab(label = suit_factor) +
       ggplot2::ylab(NULL) +
       ggplot2::theme_classic(base_size = 16) +
       ggplot2::theme(legend.position = "none") +
       NULL
     
     fit_plot
-    
-    # plotly::ggplotly(fit_plot, height = 600)
     
   })
   
@@ -396,7 +426,7 @@ md <- function(input, output, session) {
   
   output$suitTable <- render_gt({
     
-    df <- data.frame(x = c(0:320)) |>
+    df <- data.frame(x = c(0:max_x)) |>
       dplyr::mutate(
         suitability =
           # Maybe it's not best to do this with case_when?
@@ -427,7 +457,7 @@ md <- function(input, output, session) {
     
     # Create data frame
     df_table <- df |>
-      dplyr::filter(x %in% seq(0, 320, 20))
+      dplyr::filter(x %in% seq(0, max_x, 20))
     
     df_table_t <- df_table |>
       data.table::transpose() |>
