@@ -9,23 +9,21 @@ suitUI <- function(id) {
     
     box(title = "Suitability Function Generator",
         width = 9,
-        height = 600,
+        height = 620,
         plotOutput(outputId = ns("suitPlot")),
         collapsible = FALSE
     ),
     
     box(title = "Options",
-        id = "options",
+        id = ns("options"),
+        # style = '{overflow-y: scroll;}',
         width = 3,
-        height = 600,
+        height = 620,
         
         tags$head(
-          tags$style(HTML("#options box {
-                      height: 90vh; overflow-y: auto;
-                    }"
-          ) # close HTML       
-          )            # close tags$style
-        ),             # close tags#Head
+          tags$style(HTML(".box {overflow-y: scroll;}") # Close HTML
+                     ) # Close tags$style
+          ),# Close tags#Head
         
         
         textInput(inputId = ns("species"),
@@ -37,8 +35,8 @@ suitUI <- function(id) {
                      value = 4),
         
         fluidRow(
-          # height = 300,
           column(6,
+                 tags$h5(tags$b("X Value")),
                  numericInput(inputId = ns("x1"),
                               label = NULL,
                               value = 20, width = "99%"),
@@ -77,6 +75,7 @@ suitUI <- function(id) {
                               value = 320)
           ),
           column(6,
+                 tags$h5(tags$b("Y Value")),
                  numericInput(inputId = ns("y1"),
                               label = NULL,
                               value = 1,
