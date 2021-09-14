@@ -14,7 +14,7 @@ library(equatiomatic)
 # Load modules
 source("Modules/functions.R", local = TRUE)
 source("Modules/constants.R", local = TRUE)
-source("Modules/suitability.R", local = TRUE)
+source("Modules/md.R", local = TRUE)
 source("Modules/data.R", local = TRUE)
 
 # User interface
@@ -69,7 +69,7 @@ ui <- dashboardPage(
         tabItems(
 
             tabItem(tabName = "md",
-                    suitUI(id = "md.id"))
+                    mdUI(id = "md.id"))
             
             # tabItem(tabName = "at",
             #         suitUI(id = "at.id")),
@@ -84,7 +84,7 @@ ui <- dashboardPage(
             #         suitUI(id = "smr.id")),
             # 
             # tabItem(tabName = "snr",
-            #         suitUI(id = "snr.id")),
+            #         suitUI(id = "snr.id"))
             
             
 
@@ -98,10 +98,8 @@ ui <- dashboardPage(
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
     
-    callModule(module = suit,
-               id = "md.id",
-               suit_factor = "Moisture deficit",
-               max_x = 320)
+    callModule(module = md,
+               id = "md.id")
     
     # callModule(module = suit,
     #            id = "at.id",
@@ -109,23 +107,23 @@ server <- function(input, output, session) {
     #            max_x = 320)
     # 
     # callModule(module = suit,
-    #            id = "md.id",
-    #            suit_factor = "Moisture deficit",
+    #            id = "ct.id",
+    #            suit_factor = "Continentality",
     #            max_x = 320)
     # 
     # callModule(module = suit,
-    #            id = "md.id",
-    #            suit_factor = "Moisture deficit",
+    #            id = "dams.id",
+    #            suit_factor = "Exposure",
     #            max_x = 320)
     # 
     # callModule(module = suit,
-    #            id = "md.id",
-    #            suit_factor = "Moisture deficit",
+    #            id = "smr.id",
+    #            suit_factor = "Soil Moisture Regime",
     #            max_x = 320)
     # 
     # callModule(module = suit,
-    #            id = "md.id",
-    #            suit_factor = "Moisture deficit",
+    #            id = "snr.id",
+    #            suit_factor = "Soil Nutrient Regime",
     #            max_x = 320)
     
     

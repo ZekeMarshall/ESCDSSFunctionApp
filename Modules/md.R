@@ -1,5 +1,5 @@
 # Establishes UI module function
-suitUI <- function(id) {
+mdUI <- function(id) {
   
   ns <- NS(id)
   
@@ -195,23 +195,24 @@ suitUI <- function(id) {
 }
 
 # Establishes the server module function
-suit <- function(input, output, session, suit_factor, max_x) {
+md <- function(input, output, session) {
   
    
   # # These observe events update the variables for selection
   # observeEvent(input$species,  {
   #     req(input$species)
-  #     
+  # 
   #     updateNumericInput(session,
   #                        inputId = "x1",
-  #                        choices = dplyr::filter(default_scores, 
-  #                                                species == input$species
-  #                                                x = ""))
-  # })
+  #                        choices = 
+  #                          dplyr::filter(default_scores,
+  #                                        species == input$species
+  #                                        x = "") |>
+  #                          )
+  #     })
   
-  
-  # Create reactive objects
-  # max_x <- 320
+  max_x <- 320
+
   
   params <- reactive({
     
@@ -402,7 +403,7 @@ suit <- function(input, output, session, suit_factor, max_x) {
       ggplot2::ggtitle(label = input$species) +
       ggplot2::scale_x_continuous(breaks = seq(0,max_x,20)) +
       ggplot2::scale_y_continuous(breaks = seq(0,1,0.1)) +
-      ggplot2::xlab(label = suit_factor) +
+      ggplot2::xlab(label = "Moisture deficit []") +
       ggplot2::ylab(NULL) +
       ggplot2::theme_classic(base_size = 16) +
       ggplot2::theme(legend.position = "none") +
