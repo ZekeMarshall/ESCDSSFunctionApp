@@ -13,23 +13,7 @@ library(equatiomatic)
 
 # Load modules
 source("Modules/functions.R", local = TRUE)
-
-# Read default scores data
-
-# Define suitability colors
-vs_col <- "#9ec7a9"
-s_col <- "#EFFFAC"
-m_col <- "#FFE9AC"
-u_col <- "#FFACAC"
-
-# Define horizontal and vertical line color
-line_col <- "black"
-
-# Define horizontal and vertical line size
-line_size <- 0.15
-
-# Establish default list of species
-
+source("Modules/constants.R", local = TRUE)
 
 # User interface
 ui <- dashboardPage(
@@ -65,7 +49,11 @@ ui <- dashboardPage(
         #         text = "Soil Nutrient Regime",
         #         tabName = "snr"
         #     ),
-        # )
+        #     menuItem(
+        #         text = "Summary",
+        #         tabName = "summary"
+        #     ),
+        # ),
         
         
         
