@@ -27,7 +27,6 @@ RootNonlinearInterpolant <- function (x, y, f, y0 = 0) {
 }
 
 # Get suitability ranges from x intercept values
-
 get_x_intercepts <- function(fitted_data, x = x, y = y) {
 
     # Find the y intercept values

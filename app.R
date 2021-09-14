@@ -7,7 +7,8 @@ library(ggplot2)
 library(bs4Dash)
 library(gt)
 library(janitor)
-# library(plotly)
+library(broom)
+library(glue)
 library(equatiomatic)
 
 # Load modules
@@ -289,7 +290,6 @@ server <- function(input, output, x1) {
     
     
     # Create reactive objects
-    
     max_x <- 320
     
     params <- reactive({
