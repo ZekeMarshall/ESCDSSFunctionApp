@@ -206,12 +206,20 @@ ui <- dashboardPage(
             withMathJax(), # Initialize mathJax so the equation renders properly
             box(title = NULL,
                 width = 12,
-                eqOutput("ploy_eq"),
+                fluidRow(
+                    column(8,
+                           eqOutput("ploy_eq")
+                    ),
+                    column(4,
+                           eqOutput("model_r.squared"))
+                ),
+                # header = NULL,
                 collapsible = FALSE
             ),
             box(title = "Suitability Data",
                 width = 12,
                 gt_output("suitTable"),
+                # header = NULL,
                 collapsible = FALSE),
             box(title = "Notes",
                 width = 12,
@@ -597,6 +605,42 @@ server <- function(input, output) {
         equatiomatic::extract_eq(model, use_coefs = TRUE, coef_digits = 4) 
         
     })
+    
+    output$model_r.squared <- renderEq({
+        
+        # Create parameters
+        params <- data.frame(x = c(input$x1,
+                                   input$x2,
+                                   input$x3,
+                                   input$x4,
+                                   input$x5,
+                                   input$x6,
+                                   input$x7,
+                                   input$x8,
+                                   input$x9,
+                                   input$x10
+                                   ),
+                             y = c(input$y1,
+                                   input$y2,
+                                   input$y3,
+                                   input$y4,
+                                   input$y5,
+                                   input$y6,
+                                   input$y7,
+                                   input$y8,
+                                   input$y9,
+                                   input$y10
+                                   )
+                             )
+        
+        model <- lm(data = params,
+                    y ~ poly(x, input$poly_num))
+        
+        glue::glue("R.squared: {broom::glance(model)$r.squared}")
+        
+    })
+    
+    broom::glance(model)$r.squared
     
     output$suitTable <- render_gt({
         

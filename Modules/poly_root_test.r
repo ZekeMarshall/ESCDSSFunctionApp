@@ -285,3 +285,7 @@ df <- data.frame(x = c(0:320)) |>
         TRUE ~ as.character(x)
       )
   )
+
+broom::tidy(model)
+
+foo <- broom::glance(model)
