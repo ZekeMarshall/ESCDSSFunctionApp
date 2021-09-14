@@ -289,3 +289,5 @@ df <- data.frame(x = c(0:320)) |>
 broom::tidy(model)
 
 foo <- broom::glance(model)
+
+foo <- get_x_intercepts(fitted_data = params_fit)

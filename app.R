@@ -250,7 +250,7 @@ ui <- dashboardPage(
 
 
 # Define server logic required to draw a histogram
-server <- function(input, output) {
+server <- function(input, output, x1) {
     
     # # These observe events update the variables for selection
     # observeEvent(input$suit_factor,  {
@@ -287,6 +287,68 @@ server <- function(input, output) {
     #                                                x = ""))
     # })
     
+    
+    # Create reactive objects
+    
+    max_x <- 320
+    
+    params <- reactive({
+        
+        data.frame(x = c(input$x1,
+                        input$x2,
+                        input$x3,
+                        input$x4,
+                        input$x5,
+                        input$x6,
+                        input$x7,
+                        input$x8,
+                        input$x9,
+                        input$x10
+                        ),
+                  y = c(input$y1,
+                        input$y2,
+                        input$y3,
+                        input$y4,
+                        input$y5,
+                        input$y6,
+                        input$y7,
+                        input$y8,
+                        input$y9,
+                        input$y10
+                        )
+                  )
+        })
+            
+    
+
+    # Create a polynomial model to fit suitability score parameters
+    model <- reactive({
+        
+        lm(data = params(),
+           y ~ poly(x, input$poly_num))
+        
+    })
+    
+    # Fitted model data
+    params_fit <- reactive({
+        
+        data.frame(x = seq(0:max_x),
+                   y = predict(object = model(), data.frame(x = seq(0:max_x))))
+        
+    })
+    
+    # x intercept values
+    
+    x_ints <- reactive({
+        
+       get_x_intercepts(fitted_data = params_fit(), x = x, y = y)
+        
+    })
+    
+    
+
+
+    
 
     output$suitPlot <- renderPlot(height = 550,{
         
@@ -305,199 +367,64 @@ server <- function(input, output) {
             subtitle = "Soil Nutrient Regime"
         }
         
-        
-        if(input$function_type == "poly"){
-            
-            # Create parameters
-            params <- data.frame(x = c(input$x1,
-                                       input$x2,
-                                       input$x3,
-                                       input$x4,
-                                       input$x5,
-                                       input$x6,
-                                       input$x7,
-                                       input$x8,
-                                       input$x9,
-                                       input$x10
-                                 ),
-                                 y = c(input$y1,
-                                       input$y2,
-                                       input$y3,
-                                       input$y4,
-                                       input$y5,
-                                       input$y6,
-                                       input$y7,
-                                       input$y8,
-                                       input$y9,
-                                       input$y10
-                                 )
-                                 )
-            
-            # Set axis min and max values
-            max_x <- 320
-            
-            # # Create parameters
-            # params <- data.frame(x = c(20,
-            #                            60,
-            #                            90,
-            #                            120,
-            #                            140,
-            #                            160,
-            #                            180,
-            #                            230,
-            #                            260,
-            #                            290
-            #                       ),
-            #                       y = c(1,
-            #                             1,
-            #                             1,
-            #                             1,
-            #                             1,
-            #                             1,
-            #                             1,
-            #                             0.85,
-            #                             0.6,
-            #                             0.3
-            #                       )
-            #                       )
-            
-            
-            
-            # Create a polynomial model to fit suitability score parameters
-            model <- lm(data = params,
-                        y ~ poly(x, input$poly_num)) #input$poly_num
-            
-            params_fit <- data.frame(x = seq(0:max_x), 
-                                     y = predict(object = model, data.frame(x = seq(0:max_x))))
-            
-            # Find the y intercept values
-            y0=0
-            f <- splinefun(params_fit$x, params_fit$y)
-            lines.0 <- RootNonlinearInterpolant(params_fit$x, params_fit$y, f, y0)
-            
-            if(length(lines.0) > 1){
-                lines.0_low <- min(lines.0)
-                lines.0_high <- max(lines.0)
-            } else if(length(lines.0) == 1 & lines.0 < median(params_fit$x)){
-                lines.0_low <- lines.0
-                lines.0_high <- NA
-            } else if(length(lines.0) == 1 & lines.0 > median(params_fit$x)){
-                lines.0_low <- NA
-                lines.0_high <- lines.0
-                
-            }
-            
-            # Find the very suitable range first as these values can be used to determine
-            # whether the other values are low or high if only one exists.
-            y0=0.75
-            f <- splinefun(params_fit$x, params_fit$y)
-            lines.75 <- RootNonlinearInterpolant(params_fit$x, params_fit$y, f, y0)
-            
-            if(length(lines.75) > 1){
-                vs_low <- min(lines.75)
-                vs_high <- max(lines.75)
-            } else if(lines.75 < lines.0_high){
-                vs_low <- NA
-                vs_high <- lines.75
-            } else if(lines.75 > lines.0_high){
-                vs_low <- lines.75
-                vs_high <- NA
-            }
-            
-            # Find the mildly suitable range values
-            y0=0.25
-            f <- splinefun(params_fit$x, params_fit$y)
-            lines.25 <- RootNonlinearInterpolant(params_fit$x, params_fit$y, f, y0)
-            
-            if(length(lines.25) > 1){
-                m_low <- min(lines.25)
-                m_high <- max(lines.25) 
-            } else if(lines.25 >= vs_high){
-                m_low <- NA
-                m_high <- lines.25 
-            } else if(lines.25 <= vs_low){
-                m_low <- lines.25
-                m_high <- NA 
-            }
-            
-            # Find the suitable range values
-            y0=0.5
-            f <- splinefun(params_fit$x, params_fit$y)
-            lines.5 <- RootNonlinearInterpolant(params_fit$x, params_fit$y, f, y0)
-            
-            if(length(lines.5) > 1){
-                s_low <- min(lines.5)
-                s_high <- max(lines.5) 
-            } else if(lines.5 >= vs_high){
-                s_low <- NA
-                s_high <- lines.5 
-            } else if(lines.5 <= vs_low){
-                s_low <- lines.5
-                s_high <- NA 
-            }
-            
-            # By default the unsuitable range contains values greater than m_high, but less
-            # than the yintercept if... and less than m_low if...
-            
-            
             
             fit_plot <- ggplot2::ggplot() +
                 
                 # Unsuitable area fill
-                shade_curve(df = params_fit,
+                shade_curve(df = params_fit(),
                             x = x,
                             y = y,
                             alpha = 1,
-                            zstart = ifelse(lines.0_low < vs_low & lines.0_low > 0, lines.0_low, 0),
-                            zend = ifelse(is.na(m_low), 0, m_low),  
+                            zstart = ifelse(x_ints()$lines.0_low < x_ints()$vs_low & x_ints()$lines.0_low > 0, x_ints()$lines.0_low, 0),
+                            zend = ifelse(is.na(x_ints()$m_low), 0, x_ints()$m_low),  
                             fill = u_col) +
-                shade_curve(df = params_fit,
+                shade_curve(df = params_fit(),
                             x = x,
                             y = y,
                             alpha = 1,
-                            zstart = ifelse(is.na(m_high), max_x, m_high),
-                            zend = ifelse(is.na(lines.0_high), max_x, lines.0_high),
+                            zstart = ifelse(is.na(x_ints()$m_high), max_x, x_ints()$m_high),
+                            zend = ifelse(is.na(x_ints()$lines.0_high), max_x, x_ints()$lines.0_high),
                             fill = u_col) +
                 
                 # Mildly suitable area fill
-                shade_curve(df = params_fit,
+                shade_curve(df = params_fit(),
                             x = x,
                             y = y,
                             alpha = 1,
-                            zstart = ifelse(is.na(m_low), 0, m_low),
-                            zend = ifelse(is.na(s_low), 0, s_low),
+                            zstart = ifelse(is.na(x_ints()$m_low), 0, x_ints()$m_low),
+                            zend = ifelse(is.na(x_ints()$s_low), 0, x_ints()$s_low),
                             fill = m_col) +
-                shade_curve(df = params_fit,
+                shade_curve(df = params_fit(),
                             x = x,
                             y = y,
                             alpha = 1,
-                            zstart = ifelse(is.na(s_high), max_x, s_high),
-                            zend = ifelse(is.na(m_high), max_x, m_high),
+                            zstart = ifelse(is.na(x_ints()$s_high), max_x, x_ints()$s_high),
+                            zend = ifelse(is.na(x_ints()$m_high), max_x, x_ints()$m_high),
                             fill = m_col) +
                 
                 # Suitable area fill
-                shade_curve(df = params_fit,
+                shade_curve(df = params_fit(),
                             x = x,
                             y = y,
                             alpha = 1,
-                            zstart = ifelse(is.na(s_low), 0, s_low),
-                            zend = ifelse(is.na(vs_low), 0, vs_low),
+                            zstart = ifelse(is.na(x_ints()$s_low), 0, x_ints()$s_low),
+                            zend = ifelse(is.na(x_ints()$vs_low), 0, x_ints()$vs_low),
                             fill = s_col) +
-                shade_curve(df = params_fit,
+                shade_curve(df = params_fit(),
                             x = x,
                             y = y,
                             alpha = 1,
-                            zstart = ifelse(is.na(vs_high), max_x, vs_high),
-                            zend = ifelse(is.na(s_high), max_x, s_high),
+                            zstart = ifelse(is.na(x_ints()$vs_high), max_x, x_ints()$vs_high),
+                            zend = ifelse(is.na(x_ints()$s_high), max_x, x_ints()$s_high),
                             fill = s_col) +
                 
                 # Very suitable area fill
-                shade_curve(df = params_fit,
+                shade_curve(df = params_fit(),
                             x = x,
                             y = y,
                             alpha = 1,
-                            zstart = ifelse(is.na(vs_low), 0, vs_low),  
-                            zend = ifelse(is.na(vs_high), max_x, vs_high),  
+                            zstart = ifelse(is.na(x_ints()$vs_low), 0, x_ints()$vs_low),  
+                            zend = ifelse(is.na(x_ints()$vs_high), max_x, x_ints()$vs_high),  
                             fill = vs_col) +
                 
                 # Horizontal suitability lines
@@ -516,33 +443,33 @@ server <- function(input, output) {
                 
                 
                 # Vertical range lines
-                ggplot2::geom_vline(xintercept = ifelse(is.numeric(m_low), m_low, 0),
+                ggplot2::geom_vline(xintercept = ifelse(is.numeric(x_ints()$m_low), x_ints()$m_low, 0),
                                     size = line_size,
                                     color = line_col) +
-                ggplot2::geom_vline(xintercept = ifelse(is.numeric(s_low), s_low, 0),
+                ggplot2::geom_vline(xintercept = ifelse(is.numeric(x_ints()$s_low), x_ints()$s_low, 0),
                                     size = line_size,
                                     color = line_col) +
-                ggplot2::geom_vline(xintercept = ifelse(is.numeric(vs_low), vs_low, 0),
+                ggplot2::geom_vline(xintercept = ifelse(is.numeric(x_ints()$vs_low), x_ints()$vs_low, 0),
                                     size = line_size,
                                     color = line_col) +
-                ggplot2::geom_vline(xintercept = ifelse(is.numeric(vs_high), vs_high, max_x),
+                ggplot2::geom_vline(xintercept = ifelse(is.numeric(x_ints()$vs_high), x_ints()$vs_high, max_x),
                                     size = line_size,
                                     color = line_col) +
-                ggplot2::geom_vline(xintercept = ifelse(is.numeric(s_high), s_high, max_x),
+                ggplot2::geom_vline(xintercept = ifelse(is.numeric(x_ints()$s_high), x_ints()$s_high, max_x),
                                     size = line_size,
                                     color = line_col) +
-                ggplot2::geom_vline(xintercept = ifelse(is.numeric(m_high), m_high, max_x),
+                ggplot2::geom_vline(xintercept = ifelse(is.numeric(x_ints()$m_high), x_ints()$m_high, max_x),
                                     size = line_size,
                                     color = line_col) +
                 
                 # Add fitted data
-                ggplot2::geom_line(data = params_fit,
+                ggplot2::geom_line(data = params_fit(),
                                    mapping = ggplot2::aes(x = x,
                                                           y = y),
                                    size = 0.5) +
                 
                 # Add parametisation points
-                ggplot2::geom_point(data = params,
+                ggplot2::geom_point(data = params(),
                                     mapping = ggplot2::aes(x = x,
                                                            y = y,
                                                            size = 0.5)) +
@@ -566,187 +493,21 @@ server <- function(input, output) {
             
             # plotly::ggplotly(fit_plot, height = 600)
             
-            
-            
-        }
-        
     })
     
     output$ploy_eq <- renderEq({
         
-        # Create parameters
-        params <- data.frame(x = c(input$x1,
-                                   input$x2,
-                                   input$x3,
-                                   input$x4,
-                                   input$x5,
-                                   input$x6,
-                                   input$x7,
-                                   input$x8,
-                                   input$x9,
-                                   input$x10
-                             ),
-                             y = c(input$y1,
-                                   input$y2,
-                                   input$y3,
-                                   input$y4,
-                                   input$y5,
-                                   input$y6,
-                                   input$y7,
-                                   input$y8,
-                                   input$y9,
-                                   input$y10
-                            )
-        )
-        
-        model <- lm(data = params,
-                    y ~ poly(x, input$poly_num))
-        
-        equatiomatic::extract_eq(model, use_coefs = TRUE, coef_digits = 4) 
+        equatiomatic::extract_eq(model(), use_coefs = TRUE, coef_digits = 4) 
         
     })
     
     output$model_r.squared <- renderEq({
-        
-        # Create parameters
-        params <- data.frame(x = c(input$x1,
-                                   input$x2,
-                                   input$x3,
-                                   input$x4,
-                                   input$x5,
-                                   input$x6,
-                                   input$x7,
-                                   input$x8,
-                                   input$x9,
-                                   input$x10
-                                   ),
-                             y = c(input$y1,
-                                   input$y2,
-                                   input$y3,
-                                   input$y4,
-                                   input$y5,
-                                   input$y6,
-                                   input$y7,
-                                   input$y8,
-                                   input$y9,
-                                   input$y10
-                                   )
-                             )
-        
-        model <- lm(data = params,
-                    y ~ poly(x, input$poly_num))
-        
-        glue::glue("R.squared: {broom::glance(model)$r.squared}")
+    
+        glue::glue("R.squared: {broom::glance(model())$r.squared}")
         
     })
     
-    broom::glance(model)$r.squared
-    
     output$suitTable <- render_gt({
-        
-        # Create parameters
-        params <- data.frame(x = c(input$x1,
-                                   input$x2,
-                                   input$x3,
-                                   input$x4,
-                                   input$x5,
-                                   input$x6,
-                                   input$x7,
-                                   input$x8,
-                                   input$x9,
-                                   input$x10
-                                   ),
-                             y = c(input$y1,
-                                   input$y2,
-                                   input$y3,
-                                   input$y4,
-                                   input$y5,
-                                   input$y6,
-                                   input$y7,
-                                   input$y8,
-                                   input$y9,
-                                   input$y10
-                                   )
-                             )
-        
-        # Set axis min and max values
-        max_x <- 320
-        
-        # Create a polynomial model to fit suitability score parameters
-        model <- lm(data = params,
-                    y ~ poly(x, input$poly_num)) #input$poly_num
-        
-        params_fit <- data.frame(x = seq(0:max_x), 
-                                 y = predict(object = model, data.frame(x = seq(0:max_x))))
-        
-        # Find the y intercept values
-        y0=0
-        f <- splinefun(params_fit$x, params_fit$y)
-        lines.0 <- RootNonlinearInterpolant(params_fit$x, params_fit$y, f, y0)
-        
-        if(length(lines.0) > 1){
-            lines.0_low <- min(lines.0)
-            lines.0_high <- max(lines.0)
-        } else if(length(lines.0) == 1 & lines.0 < median(params_fit$x)){
-            lines.0_low <- lines.0
-            lines.0_high <- NA
-        } else if(length(lines.0) == 1 & lines.0 > median(params_fit$x)){
-            lines.0_low <- NA
-            lines.0_high <- lines.0
-            
-        }
-        
-        # Find the very suitable range first as these values can be used to determine
-        # whether the other values are low or high if only one exists.
-        y0=0.75
-        f <- splinefun(params_fit$x, params_fit$y)
-        lines.75 <- RootNonlinearInterpolant(params_fit$x, params_fit$y, f, y0)
-        
-        if(length(lines.75) > 1){
-            vs_low <- min(lines.75)
-            vs_high <- max(lines.75)
-        } else if(lines.75 < lines.0_high){
-            vs_low <- NA
-            vs_high <- lines.75
-        } else if(lines.75 > lines.0_high){
-            vs_low <- lines.75
-            vs_high <- NA
-        }
-        
-        # Find the mildly suitable range values
-        y0=0.25
-        f <- splinefun(params_fit$x, params_fit$y)
-        lines.25 <- RootNonlinearInterpolant(params_fit$x, params_fit$y, f, y0)
-        
-        if(length(lines.25) > 1){
-            m_low <- min(lines.25)
-            m_high <- max(lines.25) 
-        } else if(lines.25 >= vs_high){
-            m_low <- NA
-            m_high <- lines.25 
-        } else if(lines.25 <= vs_low){
-            m_low <- lines.25
-            m_high <- NA 
-        }
-        
-        # Find the suitable range values
-        y0=0.5
-        f <- splinefun(params_fit$x, params_fit$y)
-        lines.5 <- RootNonlinearInterpolant(params_fit$x, params_fit$y, f, y0)
-        
-        if(length(lines.5) > 1){
-            s_low <- min(lines.5)
-            s_high <- max(lines.5) 
-        } else if(lines.5 >= vs_high){
-            s_low <- NA
-            s_high <- lines.5 
-        } else if(lines.5 <= vs_low){
-            s_low <- lines.5
-            s_high <- NA 
-        }
-        
-        # By default the unsuitable range contains values greater than m_high, but less
-        # than the yintercept if... and less than m_low if...
         
         df <- data.frame(x = c(0:320)) |>
             dplyr::mutate(
@@ -754,22 +515,22 @@ server <- function(input, output) {
                     # Maybe it's not best to do this with case_when?
                     dplyr::case_when(
                         # Very suitable
-                        x <= ifelse(is.na(vs_high), max_x, vs_high) & x >= ifelse(is.na(vs_low), 0, vs_low) ~ "Very suitable", ##
+                        x <= ifelse(is.na(x_ints()$vs_high), max_x, x_ints()$vs_high) & x >= ifelse(is.na(x_ints()$vs_low), 0, x_ints()$vs_low) ~ "Very suitable", ##
                         
                         # High suitable
-                        x > vs_high & x <= ifelse(is.na(s_high), max_x, s_high) ~ "Suitable", ##
+                        x > x_ints()$vs_high & x <= ifelse(is.na(x_ints()$s_high), max_x, x_ints()$s_high) ~ "Suitable", ##
                         # Low suitable
-                        x < vs_low & x >= ifelse(is.na(s_low), 0, s_low) ~ "Suitable", ##
+                        x < x_ints()$vs_low & x >= ifelse(is.na(x_ints()$s_low), 0, x_ints()$s_low) ~ "Suitable", ##
                         
                         # High mildly suitable
-                        x > s_high & x <= ifelse(is.na(m_high), max_x, m_high) ~ "Mildly suitable",
+                        x > x_ints()$s_high & x <= ifelse(is.na(x_ints()$m_high), max_x, x_ints()$m_high) ~ "Mildly suitable",
                         # Low mildly suitable
-                        x < s_low & x >= ifelse(is.na(m_low), 0, m_low) ~ "Mildly suitable",
+                        x < x_ints()$s_low & x >= ifelse(is.na(x_ints()$m_low), 0, x_ints()$m_low) ~ "Mildly suitable",
                         
                         # High unsuitable
-                        x > m_high ~ "Unsuitable",
+                        x > x_ints()$m_high ~ "Unsuitable",
                         # Low unsuitable
-                        x < m_low ~ "Unsuitable",
+                        x < x_ints()$m_low ~ "Unsuitable",
                         
                         TRUE ~ as.character(x)
                     )
