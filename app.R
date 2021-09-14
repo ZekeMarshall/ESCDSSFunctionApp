@@ -14,7 +14,7 @@ library(equatiomatic)
 # Load modules
 source("Modules/functions.R", local = TRUE)
 source("Modules/constants.R", local = TRUE)
-source("Modules/md.R", local = TRUE)
+source("Modules/suitability.R", local = TRUE)
 source("Modules/data.R", local = TRUE)
 
 # User interface
@@ -66,10 +66,19 @@ ui <- dashboardPage(
     
     dashboardBody(
         
+        # tags$head(
+        #     tags$style(HTML(".box {
+        #               height: 90vh; overflow-y: auto;
+        #             }"
+        #     ) # close HTML       
+        #     )            # close tags$style
+        # ),             # close tags#Head
+        # 
+        
         tabItems(
 
             tabItem(tabName = "md",
-                    mdUI(id = "md.id"))
+                    suitUI(id = "md.id"))
             
             # tabItem(tabName = "at",
             #         suitUI(id = "at.id")),
@@ -98,8 +107,10 @@ ui <- dashboardPage(
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
     
-    callModule(module = md,
-               id = "md.id")
+    callModule(module = suit,
+               id = "md.id",
+               suit_factor = "Moisture Deficit",
+               max_x = 320)
     
     # callModule(module = suit,
     #            id = "at.id",

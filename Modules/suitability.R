@@ -1,5 +1,5 @@
 # Establishes UI module function
-mdUI <- function(id) {
+suitUI <- function(id) {
   
   ns <- NS(id)
   
@@ -15,138 +15,147 @@ mdUI <- function(id) {
     ),
     
     box(title = "Options",
+        id = "options",
         width = 3,
+        height = 600,
         
-        textInput(inputId = ns("species"), 
-                  label = "Species", 
+        tags$head(
+          tags$style(HTML("#options box {
+                      height: 90vh; overflow-y: auto;
+                    }"
+          ) # close HTML       
+          )            # close tags$style
+        ),             # close tags#Head
+        
+        
+        textInput(inputId = ns("species"),
+                  label = "Species",
                   value = "Eucalyptus glaucescens"),
         
-        numericInput(
-          inputId = ns("poly_num"),
-          label = "Polynomial Order:",
-          value = 4
-          )
+        numericInput(inputId = ns("poly_num"),
+                     label = "Polynomial Order:",
+                     value = 4),
         
-        ),
-    
-    box(title = "Parameter Values",
-          width = 3,
-          fluidRow(
-            column(6,
-                   numericInput(inputId = ns("x1"),
-                                label = NULL,
-                                value = 20),
-                   numericInput(inputId = ns("x2"),
-                                label = NULL,
-                                value = 60),
-                   numericInput(inputId = ns("x3"),
-                                label = NULL,
-                                value = 90),
-                   numericInput(inputId = ns("x4"),
-                                label = NULL,
-                                value = 120),
-                   numericInput(inputId = ns("x5"),
-                                label = NULL,
-                                value = 140),
-                   numericInput(inputId = ns("x6"),
-                                label = NULL,
-                                value = 160),
-                   numericInput(inputId = ns("x7"),
-                                label = NULL,
-                                value = 180),
-                   numericInput(inputId = ns("x8"),
-                                label = NULL,
-                                value = 200),
-                   numericInput(inputId = ns("x9"),
-                                label = NULL,
-                                value = 230),
-                   numericInput(inputId = ns("x10"),
-                                label = NULL,
-                                value = 260),
-                   numericInput(inputId = ns("x11"),
-                                label = NULL,
-                                value = 290),
-                   numericInput(inputId = ns("x12"),
-                                label = NULL,
-                                value = 320)
-            ),
-            column(6,
-                   numericInput(inputId = ns("y1"),
-                                label = NULL,
-                                value = 1,
-                                step = 0.1,
-                                max = 1,
-                                min = 0),
-                   numericInput(inputId = ns("y2"),
-                                label = NULL,
-                                value = 1,
-                                step = 0.1,
-                                max = 1,
-                                min = 0),
-                   numericInput(inputId = ns("y3"),
-                                label = NULL,
-                                value = 1,
-                                step = 0.1,
-                                max = 1,
-                                min = 0),
-                   numericInput(inputId = ns("y4"),
-                                label = NULL,
-                                value = 1,
-                                step = 0.1,
-                                max = 1,
-                                min = 0),
-                   numericInput(inputId = ns("y5"),
-                                label = NULL,
-                                value = 1,
-                                step = 0.1,
-                                max = 1,
-                                min = 0),
-                   numericInput(inputId = ns("y6"),
-                                label = NULL,
-                                value = 1,
-                                step = 0.1,
-                                max = 1,
-                                min = 0),
-                   numericInput(inputId = ns("y7"),
-                                label = NULL,
-                                value = 1,
-                                step = 0.1,
-                                max = 1,
-                                min = 0),
-                   numericInput(inputId = ns("y8"),
-                                label = NULL,
-                                value = 1,
-                                step = 0.1,
-                                max = 1,
-                                min = 0),
-                   numericInput(inputId = ns("y9"),
-                                label = NULL,
-                                value = 0.85,
-                                step = 0.1,
-                                max = 1,
-                                min = 0),
-                   numericInput(inputId = ns("y10"),
-                                label = NULL,
-                                value = 0.6,
-                                step = 0.1,
-                                max = 1,
-                                min = 0),
-                   numericInput(inputId = ns("y11"),
-                                label = NULL,
-                                value = 0.3,
-                                step = 0.1,
-                                max = 1,
-                                min = 0),
-                   numericInput(inputId = ns("y12"),
-                                label = NULL,
-                                value = 0,
-                                step = 0.1,
-                                max = 1,
-                                min = 0)
-            )
+        fluidRow(
+          # height = 300,
+          column(6,
+                 numericInput(inputId = ns("x1"),
+                              label = NULL,
+                              value = 20, width = "99%"),
+                 numericInput(inputId = ns("x2"),
+                              label = NULL,
+                              value = 60),
+                 numericInput(inputId = ns("x3"),
+                              label = NULL,
+                              value = 90),
+                 numericInput(inputId = ns("x4"),
+                              label = NULL,
+                              value = 120),
+                 numericInput(inputId = ns("x5"),
+                              label = NULL,
+                              value = 140),
+                 numericInput(inputId = ns("x6"),
+                              label = NULL,
+                              value = 160),
+                 numericInput(inputId = ns("x7"),
+                              label = NULL,
+                              value = 180),
+                 numericInput(inputId = ns("x8"),
+                              label = NULL,
+                              value = 200),
+                 numericInput(inputId = ns("x9"),
+                              label = NULL,
+                              value = 230),
+                 numericInput(inputId = ns("x10"),
+                              label = NULL,
+                              value = 260),
+                 numericInput(inputId = ns("x11"),
+                              label = NULL,
+                              value = 290),
+                 numericInput(inputId = ns("x12"),
+                              label = NULL,
+                              value = 320)
           ),
-          collapsible = FALSE
+          column(6,
+                 numericInput(inputId = ns("y1"),
+                              label = NULL,
+                              value = 1,
+                              step = 0.1,
+                              max = 1,
+                              min = 0),
+                 numericInput(inputId = ns("y2"),
+                              label = NULL,
+                              value = 1,
+                              step = 0.1,
+                              max = 1,
+                              min = 0),
+                 numericInput(inputId = ns("y3"),
+                              label = NULL,
+                              value = 1,
+                              step = 0.1,
+                              max = 1,
+                              min = 0),
+                 numericInput(inputId = ns("y4"),
+                              label = NULL,
+                              value = 1,
+                              step = 0.1,
+                              max = 1,
+                              min = 0),
+                 numericInput(inputId = ns("y5"),
+                              label = NULL,
+                              value = 1,
+                              step = 0.1,
+                              max = 1,
+                              min = 0),
+                 numericInput(inputId = ns("y6"),
+                              label = NULL,
+                              value = 1,
+                              step = 0.1,
+                              max = 1,
+                              min = 0),
+                 numericInput(inputId = ns("y7"),
+                              label = NULL,
+                              value = 1,
+                              step = 0.1,
+                              max = 1,
+                              min = 0),
+                 numericInput(inputId = ns("y8"),
+                              label = NULL,
+                              value = 1,
+                              step = 0.1,
+                              max = 1,
+                              min = 0),
+                 numericInput(inputId = ns("y9"),
+                              label = NULL,
+                              value = 0.85,
+                              step = 0.1,
+                              max = 1,
+                              min = 0),
+                 numericInput(inputId = ns("y10"),
+                              label = NULL,
+                              value = 0.6,
+                              step = 0.1,
+                              max = 1,
+                              min = 0),
+                 numericInput(inputId = ns("y11"),
+                              label = NULL,
+                              value = 0.3,
+                              step = 0.1,
+                              max = 1,
+                              min = 0),
+                 numericInput(inputId = ns("y12"),
+                              label = NULL,
+                              value = 0,
+                              step = 0.1,
+                              max = 1,
+                              min = 0)
+                 
+          ) # Close score column
+            
+        ), # Close fluidRow
+        collapsible = FALSE
       ),
+    
     
       withMathJax(), # Initialize mathJax so the equation renders properly
     
@@ -195,7 +204,10 @@ mdUI <- function(id) {
 }
 
 # Establishes the server module function
-md <- function(input, output, session) {
+suit <- function(input, output, session, max_x, suit_factor) {
+  
+  # default_scores <- default_scores |> 
+  #   dplyr::filter("Suitability.factor" == suit_factor)
   
    
   # # These observe events update the variables for selection
@@ -206,14 +218,11 @@ md <- function(input, output, session) {
   #                        inputId = "x1",
   #                        choices = 
   #                          dplyr::filter(default_scores,
-  #                                        species == input$species
-  #                                        x = "") |>
+  #                                        species == input$species) |>
   #                          )
   #     })
   
-  max_x <- 320
 
-  
   params <- reactive({
     
     params <- data.frame(x = c(input$x1,
@@ -403,7 +412,7 @@ md <- function(input, output, session) {
       ggplot2::ggtitle(label = input$species) +
       ggplot2::scale_x_continuous(breaks = seq(0,max_x,20)) +
       ggplot2::scale_y_continuous(breaks = seq(0,1,0.1)) +
-      ggplot2::xlab(label = "Moisture deficit []") +
+      ggplot2::xlab(label = suit_factor) +
       ggplot2::ylab(NULL) +
       ggplot2::theme_classic(base_size = 16) +
       ggplot2::theme(legend.position = "none") +
