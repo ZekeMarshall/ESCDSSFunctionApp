@@ -16,14 +16,20 @@ suitUI <- function(id) {
     
     box(title = "Options",
         id = ns("options"),
-        # style = '{overflow-y: scroll;}',
+        # style = '.card-body {overflow-y: scroll;}',
         width = 3,
         height = 580,
         
-        tags$head(
-          tags$style(HTML(".box {overflow-y: scroll;}") # Close HTML
+        tags$div(
+          tags$style(HTML(".card-body {overflow-y: scroll;}") # Close HTML
                      ) # Close tags$style
-          ),# Close tags#Head
+          ),# Close tags$div
+        
+        # tags$div(
+        #   tags$style("#md.id-options.card.shiny-bound-input {overflow-y: scroll;}") # Close tags$style
+        # ),# Close tags$div
+        
+        # tags$style("#md.id-options.card.shiny-bound-input {overflow-y: scroll;}"),
         
         
         textInput(inputId = ns("species"),
@@ -164,6 +170,7 @@ suitUI <- function(id) {
             
         ), # Close fluidRow
         collapsible = FALSE
+        # ) # Closes style div
       ),
     
     
