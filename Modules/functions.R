@@ -64,18 +64,18 @@ get_x_intercepts <- function(fitted_data, x = x, y = y) {
     }
     
     # Find the mildly suitable range values
-    y.25 = 0.25
-    f.25 <- splinefun(fitted_data$x, fitted_data$y)
-    lines.25 <- RootNonlinearInterpolant(fitted_data$x, fitted_data$y, f.25, y.25)
+    y.3 = 0.3
+    f.3 <- splinefun(fitted_data$x, fitted_data$y)
+    lines.3 <- RootNonlinearInterpolant(fitted_data$x, fitted_data$y, f.3, y.3)
     
-    if(length(lines.25) > 1){
-      m_low <- min(lines.25)
-      m_high <- max(lines.25)
-    } else if(lines.25 >= vs_high){
+    if(length(lines.3) > 1){
+      m_low <- min(lines.3)
+      m_high <- max(lines.3)
+    } else if(lines.3 >= vs_high){
       m_low <- NA
-      m_high <- lines.25
-    } else if(lines.25 <= vs_low){
-      m_low <- lines.25
+      m_high <- lines.3
+    } else if(lines.3 <= vs_low){
+      m_low <- lines.3
       m_high <- NA
     }
     

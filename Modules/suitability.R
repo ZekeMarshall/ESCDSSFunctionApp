@@ -9,7 +9,7 @@ suitUI <- function(id) {
     
     box(title = "Suitability Function Generator",
         width = 9,
-        height = 620,
+        height = 580,
         plotOutput(outputId = ns("suitPlot")),
         collapsible = FALSE
     ),
@@ -18,7 +18,7 @@ suitUI <- function(id) {
         id = ns("options"),
         # style = '{overflow-y: scroll;}',
         width = 3,
-        height = 620,
+        height = 580,
         
         tags$head(
           tags$style(HTML(".box {overflow-y: scroll;}") # Close HTML
@@ -36,46 +36,51 @@ suitUI <- function(id) {
         
         fluidRow(
           column(6,
-                 tags$h5(tags$b("X Value")),
+                 # tags$h5(tags$b("X Value")),
+                 tags$b("X Value"),
                  numericInput(inputId = ns("x1"),
                               label = NULL,
-                              value = 20, width = "99%"),
+                              value = 0, width = "99%"),
                  numericInput(inputId = ns("x2"),
                               label = NULL,
-                              value = 60),
+                              value = 20, width = "99%"),
                  numericInput(inputId = ns("x3"),
                               label = NULL,
-                              value = 90),
+                              value = 60),
                  numericInput(inputId = ns("x4"),
                               label = NULL,
-                              value = 120),
+                              value = 90),
                  numericInput(inputId = ns("x5"),
                               label = NULL,
-                              value = 140),
+                              value = 120),
                  numericInput(inputId = ns("x6"),
                               label = NULL,
-                              value = 160),
+                              value = 140),
                  numericInput(inputId = ns("x7"),
                               label = NULL,
-                              value = 180),
+                              value = 160),
                  numericInput(inputId = ns("x8"),
                               label = NULL,
-                              value = 200),
+                              value = 180),
                  numericInput(inputId = ns("x9"),
                               label = NULL,
-                              value = 230),
+                              value = 200),
                  numericInput(inputId = ns("x10"),
                               label = NULL,
-                              value = 260),
+                              value = 230),
                  numericInput(inputId = ns("x11"),
                               label = NULL,
-                              value = 290),
+                              value = 260),
                  numericInput(inputId = ns("x12"),
+                              label = NULL,
+                              value = 290),
+                 numericInput(inputId = ns("x13"),
                               label = NULL,
                               value = 320)
           ),
           column(6,
-                 tags$h5(tags$b("Y Value")),
+                 # tags$h5(tags$b("Y Value")),
+                 tags$b("Y Value"),
                  numericInput(inputId = ns("y1"),
                               label = NULL,
                               value = 1,
@@ -126,23 +131,29 @@ suitUI <- function(id) {
                               min = 0),
                  numericInput(inputId = ns("y9"),
                               label = NULL,
-                              value = 0.85,
+                              value = 1,
                               step = 0.1,
                               max = 1,
                               min = 0),
                  numericInput(inputId = ns("y10"),
                               label = NULL,
-                              value = 0.6,
+                              value = 0.85,
                               step = 0.1,
                               max = 1,
                               min = 0),
                  numericInput(inputId = ns("y11"),
                               label = NULL,
-                              value = 0.3,
+                              value = 0.6,
                               step = 0.1,
                               max = 1,
                               min = 0),
                  numericInput(inputId = ns("y12"),
+                              label = NULL,
+                              value = 0.3,
+                              step = 0.1,
+                              max = 1,
+                              min = 0),
+                 numericInput(inputId = ns("y13"),
                               label = NULL,
                               value = 0,
                               step = 0.1,
@@ -235,7 +246,8 @@ suit <- function(input, output, session, max_x, suit_factor) {
                                input$x9,
                                input$x10,
                                input$x11,
-                               input$x12
+                               input$x12,
+                               input$x13
                             
                                ), # Close x values
                          y = c(input$y1,
@@ -249,7 +261,8 @@ suit <- function(input, output, session, max_x, suit_factor) {
                                input$y9,
                                input$y10,
                                input$y11,
-                               input$y12
+                               input$y12,
+                               input$y13
                                ) # Close y values
                 
                 ) # Close data frame
@@ -294,7 +307,7 @@ suit <- function(input, output, session, max_x, suit_factor) {
   
   
   
-  output$suitPlot <- renderPlot(height = 550, {
+  output$suitPlot <- renderPlot(height = 520, {
     
     fit_plot <- ggplot2::ggplot() +
       
@@ -356,7 +369,7 @@ suit <- function(input, output, session, max_x, suit_factor) {
                   fill = vs_col) +
       
       # Horizontal suitability lines
-      ggplot2::geom_hline(yintercept = 0.25,
+      ggplot2::geom_hline(yintercept = 0.3,
                           size = line_size,
                           color = line_col) +
       ggplot2::geom_hline(yintercept = 0.50,
