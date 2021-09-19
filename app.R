@@ -109,7 +109,7 @@ server <- function(input, output, session) {
     
     callModule(module = suit,
                id = "md.id",
-               suit_factor = "Moisture Deficit",
+               suit_factor = "md",
                max_x = 320)
     
     # callModule(module = suit,

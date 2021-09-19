@@ -31,15 +31,29 @@ suitUI <- function(id) {
         
         # tags$style("#md.id-options.card.shiny-bound-input {overflow-y: scroll;}"),
         
+        # tags$style("#md.id-options {overflow-y: scroll;}"),
         
-        textInput(inputId = ns("species"),
-                  label = "Species",
-                  value = "Eucalyptus glaucescens"),
+        
+        selectInput(inputId = ns("species"),
+                    label = "Species",
+                    choices = species),
         
         numericInput(inputId = ns("poly_num"),
                      label = "Polynomial Order:",
                      value = 4),
         
+        fluidRow(
+          column(6,
+                 checkboxInput(inputId = ns("defaultscores"),
+                               label = "Use default scores",
+                               value = TRUE)),
+          column(6,
+                 downloadButton(outputId = ns("writemodel"),
+                                label = "Write model",
+                                class = "dlButton"))
+          
+        ),
+    
         fluidRow(
           column(6,
                  # tags$h5(tags$b("X Value")),
@@ -221,67 +235,82 @@ suitUI <- function(id) {
 }
 
 # Establishes the server module function
-suit <- function(input, output, session, max_x, suit_factor) {
+suit <- function(input, output, session, max_x, suit_factor, species) {
   
-  # default_scores <- default_scores |> 
-  #   dplyr::filter("Suitability.factor" == suit_factor)
+  # default_scores <- tidy_scores_v1 |>
+  #   dplyr::filter(factor == suit_factor)
   
    
   # # These observe events update the variables for selection
   # observeEvent(input$species,  {
+  #   
   #     req(input$species)
   # 
   #     updateNumericInput(session,
   #                        inputId = "x1",
-  #                        choices = 
+  #                        choices =
   #                          dplyr::filter(default_scores,
   #                                        species == input$species) |>
   #                          )
   #     })
-  
 
-  params <- reactive({
-    
-    params <- data.frame(x = c(input$x1,
-                               input$x2,
-                               input$x3,
-                               input$x4,
-                               input$x5,
-                               input$x6,
-                               input$x7,
-                               input$x8,
-                               input$x9,
-                               input$x10,
-                               input$x11,
-                               input$x12,
-                               input$x13
-                            
-                               ), # Close x values
-                         y = c(input$y1,
-                               input$y2,
-                               input$y3,
-                               input$y4,
-                               input$y5,
-                               input$y6,
-                               input$y7,
-                               input$y8,
-                               input$y9,
-                               input$y10,
-                               input$y11,
-                               input$y12,
-                               input$y13
-                               ) # Close y values
-                
-                ) # Close data frame
-    
-    params <- params |>
-      dplyr::filter(!is.na(x)) |> 
-      dplyr::filter(!is.na(y))
-    
-    return(params)
-    
-    
-  })
+      
+      params <- reactive({
+        
+        if(input$defaultscores == TRUE) {
+        
+          params <- tidy_scores_v1 |>
+            
+            dplyr::filter(factor == suit_factor,
+                          species == input$species) |> 
+            
+            dplyr::rename("x" = "value",
+                          "y" = "score")
+          
+        } else if(input$defaultscores == FALSE) {
+      
+          params <- data.frame(x = c(input$x1,
+                                     input$x2,
+                                     input$x3,
+                                     input$x4,
+                                     input$x5,
+                                     input$x6,
+                                     input$x7,
+                                     input$x8,
+                                     input$x9,
+                                     input$x10,
+                                     input$x11,
+                                     input$x12,
+                                     input$x13
+                                     
+                                ), # Close x values
+                                y = c(input$y1,
+                                      input$y2,
+                                      input$y3,
+                                      input$y4,
+                                      input$y5,
+                                      input$y6,
+                                      input$y7,
+                                      input$y8,
+                                      input$y9,
+                                      input$y10,
+                                      input$y11,
+                                      input$y12,
+                                      input$y13
+                                ) # Close y values
+          
+          ) # Close data frame
+          
+          params <- params |>
+            dplyr::filter(!is.na(x)) |> 
+            dplyr::filter(!is.na(y))
+          
+        }
+        
+        return(params)
+      
+    })
+
   
   
   
@@ -512,6 +541,25 @@ suit <- function(input, output, session, max_x, suit_factor) {
     table
     
   })
+  
+  
+  output$writemodel <- downloadHandler(
+
+    filename = function() {
+      
+      paste("ESCDSSModel", " - ", suit_factor, " - ", input$species, ".Rdata", sep="")
+      
+    },
+
+    content = function(file) {
+      
+      model <- model()
+      
+      saveRDS(object = model, file = file)
+      
+    }
+
+  )
   
   
   
