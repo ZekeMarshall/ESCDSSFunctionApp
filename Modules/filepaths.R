@@ -1,4 +1,4 @@
-scores_path <- "Data/tidy_scores_v1.csv"
+scores_path <- file.path("Data/tidy_scores_v1.csv")
 
 # scores_path_at <- file.path(scores_path, "V2Scores/v2_scores_at.csv")
 # scores_path_ct <- file.path(scores_path, "V2Scores/v2_scores_ct.csv")

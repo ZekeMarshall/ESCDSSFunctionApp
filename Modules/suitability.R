@@ -43,11 +43,15 @@ suitUI <- function(id) {
                      value = 4),
         
         fluidRow(
-          column(6,
+          column(4,
                  checkboxInput(inputId = ns("defaultscores"),
                                label = "Use default scores",
                                value = TRUE)),
-          column(6,
+          column(4,
+                 checkboxInput(inputId = ns("max1"),
+                               label = "Max 1",
+                               value = TRUE)),
+          column(4,
                  downloadButton(outputId = ns("writemodel"),
                                 label = "Write model",
                                 class = "dlButton"))
@@ -325,8 +329,27 @@ suit <- function(input, output, session, max_x, suit_factor, species) {
   # Fitted model data
   params_fit <- reactive({
     
-    data.frame(x = seq(0:max_x),
-               y = predict(object = model(), data.frame(x = seq(0:max_x))))
+    params_fit <- data.frame(x = seq(0:max_x),
+                             y = predict(object = model(), data.frame(x = seq(0:max_x))))
+    
+    if(input$max1 == TRUE){
+      
+      params_fit <- params_fit |> 
+        dplyr::mutate(
+          y = dplyr::case_when(
+            y > 1 ~ 1,
+            TRUE ~ as.numeric(y)
+          )
+        )
+      
+      
+    } else if(input$max1 == FALSE){
+      
+      params_fit <- params_fit
+      
+    }
+    
+    return(params_fit)
     
   })
   

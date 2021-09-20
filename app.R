@@ -16,6 +16,7 @@ source("Modules/functions.R", local = TRUE)
 source("Modules/constants.R", local = TRUE)
 source("Modules/suitability.R", local = TRUE)
 source("Modules/data.R", local = TRUE)
+source("Modules/filepaths.R", local = TRUE)
 
 # User interface
 ui <- dashboardPage(
