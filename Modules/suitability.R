@@ -9,7 +9,7 @@ suitUI <- function(id) {
     
     box(title = "Suitability Function Generator",
         width = 9,
-        height = 580,
+        height = 540,
         plotOutput(outputId = ns("suitPlot")),
         collapsible = FALSE
     ),
@@ -18,7 +18,7 @@ suitUI <- function(id) {
         id = ns("options"),
         # style = '.card-body {overflow-y: scroll;}',
         width = 3,
-        height = 580,
+        height = 540,
         
         tags$div(
           tags$style(HTML(".card-body {overflow-y: scroll;}") # Close HTML
@@ -43,17 +43,25 @@ suitUI <- function(id) {
                      value = 4),
         
         fluidRow(
-          column(4,
+          column(6,
                  checkboxInput(inputId = ns("defaultscores"),
                                label = "Use default scores",
                                value = TRUE)),
-          column(4,
-                 checkboxInput(inputId = ns("max1"),
-                               label = "Max 1",
-                               value = TRUE)),
-          column(4,
-                 downloadButton(outputId = ns("writemodel"),
-                                label = "Write model",
+          column(6,
+                 checkboxInput(inputId = ns("range01"),
+                               label = "Range 0-1",
+                               value = TRUE))
+          ),
+        
+        fluidRow(
+          
+          column(6,
+                 downloadButton(outputId = ns("downmodeldata"),
+                                label = "Model Data",
+                                class = "dlButton")),
+          column(6,
+                 downloadButton(outputId = ns("downmodel"),
+                                label = "Model",
                                 class = "dlButton"))
           
         ),
@@ -321,35 +329,53 @@ suit <- function(input, output, session, max_x, suit_factor, species) {
   # Create a polynomial model to fit suitability score parameters
   model <- reactive({
     
-    lm(data = params(),
-       y ~ poly(x, input$poly_num))
+    # order <- input$poly_num
+    
+    # lm(data = params(),
+    #    y ~ poly(x, as.numeric(order)))
+    
+    poly_model(params = params(),
+               order = input$poly_num)
+    
+    
     
   })
   
   # Fitted model data
-  params_fit <- reactive({
+  modelled_data <- reactive({
     
-    params_fit <- data.frame(x = seq(0:max_x),
-                             y = predict(object = model(), data.frame(x = seq(0:max_x))))
+    modelled_data <- data.frame(x = seq(0:max_x),
+                                y = predict(object = model(), data.frame(x = seq(0:max_x))))
     
-    if(input$max1 == TRUE){
+    if(input$range01 == TRUE){
       
-      params_fit <- params_fit |> 
+      modelled_data <- modelled_data |> 
         dplyr::mutate(
           y = dplyr::case_when(
             y > 1 ~ 1,
+            y < 0 ~ 0,
             TRUE ~ as.numeric(y)
           )
         )
       
       
-    } else if(input$max1 == FALSE){
+    } else if(input$range01 == FALSE){
       
-      params_fit <- params_fit
+      modelled_data <- modelled_data
       
     }
     
-    return(params_fit)
+    return(modelled_data)
+    
+  })
+  
+  # Fitted model data
+  modelled_data_xints <- reactive({
+    
+    modelled_data_xints <- data.frame(x = seq(0:max_x),
+                                      y = predict(object = model(), data.frame(x = seq(0:max_x))))
+    
+    return(modelled_data_xints)
     
   })
   
@@ -357,7 +383,7 @@ suit <- function(input, output, session, max_x, suit_factor, species) {
   
   x_ints <- reactive({
     
-    get_x_intercepts(fitted_data = params_fit(), x = x, y = y)
+    get_x_intercepts(fitted_data = modelled_data_xints(), x = x, y = y)
     
   })
   
@@ -371,14 +397,14 @@ suit <- function(input, output, session, max_x, suit_factor, species) {
     fit_plot <- ggplot2::ggplot() +
       
       # Unsuitable area fill
-      shade_curve(df = params_fit(),
+      shade_curve(df = modelled_data(),
                   x = x,
                   y = y,
                   alpha = 1,
                   zstart = ifelse(x_ints()$lines.0_low < x_ints()$vs_low & x_ints()$lines.0_low > 0, x_ints()$lines.0_low, 0),
                   zend = ifelse(is.na(x_ints()$m_low), 0, x_ints()$m_low),  
                   fill = u_col) +
-      shade_curve(df = params_fit(),
+      shade_curve(df = modelled_data(),
                   x = x,
                   y = y,
                   alpha = 1,
@@ -387,14 +413,14 @@ suit <- function(input, output, session, max_x, suit_factor, species) {
                   fill = u_col) +
       
       # Mildly suitable area fill
-      shade_curve(df = params_fit(),
+      shade_curve(df = modelled_data(),
                   x = x,
                   y = y,
                   alpha = 1,
                   zstart = ifelse(is.na(x_ints()$m_low), 0, x_ints()$m_low),
                   zend = ifelse(is.na(x_ints()$s_low), 0, x_ints()$s_low),
                   fill = m_col) +
-      shade_curve(df = params_fit(),
+      shade_curve(df = modelled_data(),
                   x = x,
                   y = y,
                   alpha = 1,
@@ -403,14 +429,14 @@ suit <- function(input, output, session, max_x, suit_factor, species) {
                   fill = m_col) +
       
       # Suitable area fill
-      shade_curve(df = params_fit(),
+      shade_curve(df = modelled_data(),
                   x = x,
                   y = y,
                   alpha = 1,
                   zstart = ifelse(is.na(x_ints()$s_low), 0, x_ints()$s_low),
                   zend = ifelse(is.na(x_ints()$vs_low), 0, x_ints()$vs_low),
                   fill = s_col) +
-      shade_curve(df = params_fit(),
+      shade_curve(df = modelled_data(),
                   x = x,
                   y = y,
                   alpha = 1,
@@ -419,7 +445,7 @@ suit <- function(input, output, session, max_x, suit_factor, species) {
                   fill = s_col) +
       
       # Very suitable area fill
-      shade_curve(df = params_fit(),
+      shade_curve(df = modelled_data(),
                   x = x,
                   y = y,
                   alpha = 1,
@@ -463,7 +489,7 @@ suit <- function(input, output, session, max_x, suit_factor, species) {
                           color = line_col) +
       
       # Add fitted data
-      ggplot2::geom_line(data = params_fit(),
+      ggplot2::geom_line(data = modelled_data(),
                          mapping = ggplot2::aes(x = x,
                                                 y = y),
                          size = 0.5) +
@@ -566,11 +592,11 @@ suit <- function(input, output, session, max_x, suit_factor, species) {
   })
   
   
-  output$writemodel <- downloadHandler(
+  output$downmodel <- downloadHandler(
 
     filename = function() {
       
-      paste("ESCDSSModel", " - ", suit_factor, " - ", input$species, ".Rdata", sep="")
+      paste("ESCDSSModel", " - ", suit_factor, " - ", input$species, ".rds", sep="")
       
     },
 
@@ -582,6 +608,24 @@ suit <- function(input, output, session, max_x, suit_factor, species) {
       
     }
 
+  )
+  
+  output$downmodeldata <- downloadHandler(
+    
+    filename = function() {
+      
+      paste("ESCDSSModelData", " - ", suit_factor, " - ", input$species, ".csv", sep="")
+      
+    },
+    
+    content = function(file) {
+      
+      params_fit <- params_fit()
+      
+      write.csv(x = params_fit, file = file)
+      
+    }
+    
   )
   
   
