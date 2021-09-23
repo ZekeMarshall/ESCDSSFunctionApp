@@ -329,15 +329,10 @@ suit <- function(input, output, session, max_x, suit_factor, species) {
   # Create a polynomial model to fit suitability score parameters
   model <- reactive({
     
-    # order <- input$poly_num
-    
-    # lm(data = params(),
-    #    y ~ poly(x, as.numeric(order)))
-    
-    poly_model(params = params(),
-               order = input$poly_num)
-    
-    
+    order <- input$poly_num
+
+    lm(data = params(),
+       y ~ poly(x, as.numeric(order)))
     
   })
   
