@@ -73,6 +73,11 @@ params <- data.frame(x = c(20,
 model <- lm(data = params,
             y ~ poly(x, 3)) #input$poly_num
 
+# model <- lm(data = params,
+#             y ~ poly(x, 3)) #input$poly_num
+# 
+# nls(y ~ stats::SSasymp(), data = params)
+
 params_fit <- data.frame(x = seq(0:max_x), 
                          y = predict(object = model, data.frame(x = seq(0:max_x))))
 

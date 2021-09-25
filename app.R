@@ -33,28 +33,12 @@ ui <- dashboardPage(
         sidebarMenu(
             # id = "sidebarMenu",
             menuItem(
-                text = "Moisture Deficit",
-                tabName = "md"
+                text = "Suitability",
+                tabName = "suit"
             ),
             menuItem(
-                text = "Accumulated Temperature",
+                text = "New Species",
                 tabName = "at"
-            ),
-            menuItem(
-                text = "Continentality",
-                tabName = "ct"
-            ),
-            menuItem(
-                text = "Exposure",
-                tabName = "dams"
-            ),
-            menuItem(
-                text = "Soil Moisture Regime",
-                tabName = "smr"
-            ),
-            menuItem(
-                text = "Soil Nutrient Regime",
-                tabName = "snr"
             ),
             menuItem(
                 text = "Summary",
@@ -78,23 +62,8 @@ ui <- dashboardPage(
         
         tabItems(
 
-            tabItem(tabName = "md",
-                    suitUI(id = "md.id"))
-            
-            # tabItem(tabName = "at",
-            #         suitUI(id = "at.id")),
-            # 
-            # tabItem(tabName = "ct",
-            #         suitUI(id = "ct.id")),
-            # 
-            # tabItem(tabName = "dams",
-            #         suitUI(id = "dams.id")),
-            # 
-            # tabItem(tabName = "smr",
-            #         suitUI(id = "smr.id")),
-            # 
-            # tabItem(tabName = "snr",
-            #         suitUI(id = "snr.id"))
+            tabItem(tabName = "suit",
+                    suitUI(id = "suit.id"))
             
             
 
@@ -109,34 +78,7 @@ ui <- dashboardPage(
 server <- function(input, output, session) {
     
     callModule(module = suit,
-               id = "md.id",
-               suit_factor = "md",
-               max_x = 320)
-    
-    # callModule(module = suit,
-    #            id = "at.id",
-    #            suit_factor = "Accumulated temperature",
-    #            max_x = 320)
-    # 
-    # callModule(module = suit,
-    #            id = "ct.id",
-    #            suit_factor = "Continentality",
-    #            max_x = 320)
-    # 
-    # callModule(module = suit,
-    #            id = "dams.id",
-    #            suit_factor = "Exposure",
-    #            max_x = 320)
-    # 
-    # callModule(module = suit,
-    #            id = "smr.id",
-    #            suit_factor = "Soil Moisture Regime",
-    #            max_x = 320)
-    # 
-    # callModule(module = suit,
-    #            id = "snr.id",
-    #            suit_factor = "Soil Nutrient Regime",
-    #            max_x = 320)
+               id = "suit.id")
     
     
     
