@@ -73,11 +73,6 @@ params <- data.frame(x = c(20,
 model <- lm(data = params,
             y ~ poly(x, 3)) #input$poly_num
 
-# model <- lm(data = params,
-#             y ~ poly(x, 3)) #input$poly_num
-# 
-# nls(y ~ stats::SSasymp(), data = params)
-
 params_fit <- data.frame(x = seq(0:max_x), 
                          y = predict(object = model, data.frame(x = seq(0:max_x))))
 
@@ -296,3 +291,39 @@ broom::tidy(model)
 foo <- broom::glance(model)
 
 foo <- get_x_intercepts(fitted_data = params_fit)
+
+eq <- equatiomatic::extract_eq(model = model)
+
+
+################################################################################
+# Log Model
+###############################################################################
+
+model <- lm(data = params,
+            y ~ 0.01^x)
+
+model <- nls(y ~ SSasymp(x, y), data = params)
+# 
+# nls(y ~ stats::SSasymp(), data = params)
+
+params_fit <- data.frame(x = seq(0:max_x), 
+                         y = predict(object = model, data.frame(x = seq(0:max_x))))
+
+
+
+fit_plot <- ggplot2::ggplot() +
+  
+  # Add fitted data
+  ggplot2::geom_line(data = params_fit,
+                     mapping = ggplot2::aes(x = x,
+                                            y = y),
+                     size = 0.5) +
+
+  ggplot2::geom_point(data = params,
+                      mapping = ggplot2::aes(x = x,
+                                             y = y,
+                                             size = 0.5)) +
+  NULL
+
+fit_plot
+

@@ -10,13 +10,15 @@ library(janitor)
 library(broom)
 library(glue)
 library(equatiomatic)
+library(plotly)
 
 # Load modules
+source("Modules/filepaths.R", local = TRUE)
 source("Modules/functions.R", local = TRUE)
 source("Modules/constants.R", local = TRUE)
 source("Modules/suitability.R", local = TRUE)
 source("Modules/data.R", local = TRUE)
-source("Modules/filepaths.R", local = TRUE)
+source("Modules/get_new_models.R", local = TRUE)
 
 # User interface
 ui <- dashboardPage(
@@ -41,8 +43,8 @@ ui <- dashboardPage(
                 tabName = "at"
             ),
             menuItem(
-                text = "Summary",
-                tabName = "summary"
+                text = "Models",
+                tabName = "models"
             )
             
         ) # Close sidebarMenu
