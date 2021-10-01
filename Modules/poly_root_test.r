@@ -1,46 +1,5 @@
-# Create parameters
-# params <- data.frame(x = c(input$x1,
-#                            input$x2,
-#                            input$x3,
-#                            input$x4,
-#                            input$x5,
-#                            input$x6,
-#                            input$x7,
-#                            input$x8,
-#                            input$x9,
-#                            input$x10
-# ),
-# y = c(input$y1,
-#       input$y2,
-#       input$y3,
-#       input$y4,
-#       input$y5,
-#       input$y6,
-#       input$y7,
-#       input$y8,
-#       input$y9,
-#       input$y10
-# )
-# )
-
 # Set axis min and max values
 max_x <- 320
-
-# params <- data.frame(x = c(0,
-#                            80,
-#                            120,
-#                            200,
-#                            240,
-#                            320
-#                            ),
-#                      y = c(0.2,
-#                            0.4,
-#                            0.6,
-#                            1,
-#                            0.6,
-#                            0.4
-#                            )
-#                     )
 
 # Create parameters
 params <- data.frame(x = c(20,
@@ -71,10 +30,17 @@ params <- data.frame(x = c(20,
 
 
 model <- lm(data = params,
-            y ~ poly(x, 3)) #input$poly_num
+            y ~ poly(x, 3, raw = TRUE))
+
+model <- lm(data = params,
+            y ~ poly(x, 3))
 
 params_fit <- data.frame(x = seq(0:max_x), 
                          y = predict(object = model, data.frame(x = seq(0:max_x))))
+
+################################################################################
+# Find intercept values
+################################################################################
 
 # Find the y intercept values
 y0=0
@@ -142,8 +108,9 @@ if(length(lines.5) > 1){
   s_high <- NA 
 }
 
-# By default the unsuitable range contains values greater than m_high, but less
-# than the yintercept if... and less than m_low if...
+################################################################################
+# Plot fitted model
+################################################################################
 
 
 
@@ -267,7 +234,9 @@ fit_plot <- ggplot2::ggplot() +
 
 fit_plot
 
-# plotly::ggplotly(fit_plot, height = 600)
+################################################################################
+# Create table
+################################################################################
 
 
 df <- data.frame(x = c(0:320)) |>
@@ -286,13 +255,63 @@ df <- data.frame(x = c(0:320)) |>
       )
   )
 
+
+max_x <- 320
+step <- 16
+df <- params_fit
+
+# Create data frame
+df_table <- df |>
+  dplyr::filter(x %in% seq(0, max_x, max_x/16)) |> 
+  dplyr::mutate(y = round(y, digits = 2))
+
+df_table_t <- df_table |>
+  data.table::transpose() |>
+  janitor::row_to_names(1)
+
+
+
+# Create table
+
+colnames <- colnames(df_table_t)
+
+table <- gt::gt(df_table_t) |>
+  
+  gt::tab_style(
+    style = cell_fill(color = "red"),
+    locations = cells_body(
+      columns = `20`,
+      rows = `20` < 1
+    )
+  )
+
+
+# Print table
+table
+
+################################################################################
+# Get x intercepts
+################################################################################
+
+foo <- get_x_intercepts(fitted_data = params_fit)
+
+################################################################################
+# Extract equation
+################################################################################
+
+
 broom::tidy(model)
 
 foo <- broom::glance(model)
 
-foo <- get_x_intercepts(fitted_data = params_fit)
+eq <- equatiomatic::extract_eq(model = model, use_coefs = TRUE)
 
-eq <- equatiomatic::extract_eq(model = model)
+eq2 <- eq |> 
+  stringr::str_remove_all(pattern = c("[\\(\\)\\{\\}]")) |> 
+  stringr::str_remove_all(pattern = stringr::fixed("\\operatorname")) |> 
+  stringr::str_remove_all(pattern = stringr::fixed("\\widehat"))
+
+eq3 <- parse(text = eq2)
 
 
 ################################################################################

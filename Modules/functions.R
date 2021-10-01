@@ -103,3 +103,25 @@ get_x_intercepts <- function(fitted_data, x = x, y = y) {
     return(x_intercepts)
     
 }
+
+# Extract an lm model formula as a character string
+extract_model_equation <- function(model) {
+  
+  intercept <- paste(model$coefficients[[1]][[1]])
+  coefficients <- paste(model$coefficients[2:length(model[[1]])])
+  
+  equation <- as.character()
+  
+  for (i in 1:length(coefficients)) {
+    
+    equation <- paste(equation, coefficients[i], "*x^", i, " + ", sep = "")
+    
+  }
+  
+  equation <- gsub('.{3}$', '', equation)
+  
+  equation <- paste(intercept, '+', equation)
+  
+  return(equation)
+  
+}

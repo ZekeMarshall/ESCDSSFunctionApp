@@ -84,28 +84,29 @@ suitUI <- function(id) {
         # ) # Closes style div
       ),
     
+    box(title = NULL,
+        width = 12,
+        gt_output(outputId = ns("suitTable")),
+        # header = NULL,
+        collapsible = FALSE
+    ),
     
-      withMathJax(), # Initialize mathJax so the equation renders properly
+    withMathJax(), # Initialize mathJax so the equation renders properly
     
-      box(title = NULL,
-          width = 12,
-          height = 80,
-          fluidRow(
-            column(8,
-                   eqOutput(outputId = ns("ploy_eq"))
-            ),
-            column(4,
-                   eqOutput(outputId = ns("model_r.squared")))
+    box(title = NULL,
+        width = 12,
+        height = 80,
+        fluidRow(
+          column(8,
+                 eqOutput(outputId = ns("ploy_eq"))
           ),
-          # header = NULL,
-          collapsible = FALSE
-      ),
-    
-      box(title = NULL,
-          width = 12,
-          gt_output(outputId = ns("suitTable")),
-          # header = NULL,
-          collapsible = FALSE)
+          column(4,
+                 eqOutput(outputId = ns("model_r.squared")))
+        ),
+        # header = NULL,
+        collapsible = FALSE
+    )
+  
     )
 
 }
@@ -175,8 +176,11 @@ suit <- function(input, output, session, suit_factor, species) {
       
       order <- input$poly_num
       
+      # lm(data = params(),
+      #    y ~ poly(x, order, raw = TRUE))
+      
       lm(data = params(),
-         y ~ poly(x, as.numeric(order)))
+         y ~ poly(x, order))
       
     } else if(input$model_type == "log"){
       
@@ -255,8 +259,8 @@ suit <- function(input, output, session, suit_factor, species) {
         # Add parametisation points
         ggplot2::geom_point(data = params(),
                             mapping = ggplot2::aes(x = x,
-                                                   y = y,
-                                                   size = 0.5)) +
+                                                   y = y),
+                            size = 2) +
         
         
         
@@ -290,8 +294,8 @@ suit <- function(input, output, session, suit_factor, species) {
         # Add parametisation points
         ggplot2::geom_point(data = params(),
                             mapping = ggplot2::aes(x = x,
-                                                   y = y,
-                                                   size = 0.5)) +
+                                                   y = y),
+                            size = 2) +
         
         # Add fitted data
         ggplot2::geom_line(data = modelled_data(),
@@ -427,8 +431,8 @@ suit <- function(input, output, session, suit_factor, species) {
         # Add parametisation points
         ggplot2::geom_point(data = params(),
                             mapping = ggplot2::aes(x = x,
-                                                   y = y,
-                                                   size = 0.5)) +
+                                                   y = y),
+                            size = 2) +
         
         
         
@@ -556,8 +560,8 @@ suit <- function(input, output, session, suit_factor, species) {
         # Add parametisation points
         ggplot2::geom_point(data = params(),
                             mapping = ggplot2::aes(x = x,
-                                                   y = y,
-                                                   size = 0.5)) +
+                                                   y = y),
+                            size = 2) +
         
         
         
@@ -576,7 +580,7 @@ suit <- function(input, output, session, suit_factor, species) {
       
       fit_plot <- plotly::ggplotly(fit_plot,
                                    height = 520,
-                                   tooltip = c("x", "y"))
+                                   tooltip = c("x" = "x", "Score" = "y"))
       
       fit_plot
       
@@ -597,23 +601,23 @@ suit <- function(input, output, session, suit_factor, species) {
   })
   
   output$suitTable <- render_gt({
-    
+
     max_x <- as.numeric(max_x())
     step <- as.numeric(step())
-    
+
     if(input$model_area == FALSE){
-      
+
       df <- modelled_data()
-      
+
       # Create data frame
       df_table <- df |>
-        dplyr::filter(x %in% seq(0, max_x, max_x/16)) |> 
+        dplyr::filter(x %in% seq(0, max_x, max_x/16)) |>
         dplyr::mutate(y = round(y, digits = 2))
-      
+
       df_table_t <- df_table |>
         data.table::transpose() |>
         janitor::row_to_names(1)
-      
+
       # Create table
       table <- gt::gt(df_table_t) |>
         gt::cols_align(
@@ -622,14 +626,14 @@ suit <- function(input, output, session, suit_factor, species) {
         ) |>
         gt::tab_options(table.width = "100%",
                         column_labels.font.weight = "bold")
-      
-      
+
+
       # Print table
       table
-      
-      
+
+
     } else if(input$model_area == TRUE){
-      
+
       df <- modelled_data() |>
         dplyr::mutate(
           suitability =
@@ -637,36 +641,36 @@ suit <- function(input, output, session, suit_factor, species) {
             dplyr::case_when(
               # Very suitable
               x <= ifelse(is.na(x_ints()$vs_high), max_x, x_ints()$vs_high) & x >= ifelse(is.na(x_ints()$vs_low), 0, x_ints()$vs_low) ~ "VS", ##
-              
+
               # High suitable
               x > x_ints()$vs_high & x <= ifelse(is.na(x_ints()$s_high), max_x, x_ints()$s_high) ~ "S", ##
               # Low suitable
               x < x_ints()$vs_low & x >= ifelse(is.na(x_ints()$s_low), 0, x_ints()$s_low) ~ "S", ##
-              
+
               # High mildly suitable
               x > x_ints()$s_high & x <= ifelse(is.na(x_ints()$m_high), max_x, x_ints()$m_high) ~ "MS",
               # Low mildly suitable
               x < x_ints()$s_low & x >= ifelse(is.na(x_ints()$m_low), 0, x_ints()$m_low) ~ "MS",
-              
+
               # High unsuitable
               x > x_ints()$m_high ~ "U",
               # Low unsuitable
               x < x_ints()$m_low ~ "U",
-              
+
               TRUE ~ as.character(x)
             ),
           .before = y
         )
-      
+
       # Create data frame
       df_table <- df |>
-        dplyr::filter(x %in% seq(0, max_x, max_x/16)) |> 
+        dplyr::filter(x %in% seq(0, max_x, max_x/16)) |>
         dplyr::mutate(y = round(y, digits = 2))
-      
+
       df_table_t <- df_table |>
         data.table::transpose() |>
         janitor::row_to_names(1)
-      
+
       # Create table
       table <- gt::gt(df_table_t) |>
         gt::data_color(
@@ -683,17 +687,17 @@ suit <- function(input, output, session, suit_factor, species) {
         ) |>
         gt::tab_options(table.width = "100%",
                         column_labels.font.weight = "bold")
-      
-      
+
+
       # Print table
       table
-      
-      
-      
+
+
+
     }
-    
-    
-    
+
+
+
   })
   
   
