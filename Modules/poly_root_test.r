@@ -30,20 +30,21 @@ params <- data.frame(x = c(20,
 
 
 model <- lm(data = params,
-            y ~ poly(x, 3, raw = TRUE))
+            y ~ poly(x, 3, raw = T))
 
-model <- lm(data = params,
-            y ~ poly(x, 3))
+# model <- lm(data = params,
+#             y ~ poly(x, 3))
 
 params_fit <- data.frame(x = seq(0:max_x), 
-                         y = predict(object = model, data.frame(x = seq(0:max_x))))
+                         y = predict(object = model, 
+                                     data.frame(x = seq(0:max_x))))
 
 ################################################################################
 # Find intercept values
 ################################################################################
 
 # Find the y intercept values
-y0=0
+y0 <- 0
 f <- splinefun(params_fit$x, params_fit$y)
 lines.0 <- RootNonlinearInterpolant(params_fit$x, params_fit$y, f, y0)
 
@@ -61,7 +62,7 @@ if(length(lines.0) > 1){
 
 # Find the very suitable range first as these values can be used to determine
 # whether the other values are low or high if only one exists.
-y0=0.75
+y0 <- 0.75
 f <- splinefun(params_fit$x, params_fit$y)
 lines.75 <- RootNonlinearInterpolant(params_fit$x, params_fit$y, f, y0)
 
@@ -77,7 +78,7 @@ if(length(lines.75) > 1){
 }
 
 # Find the mildly suitable range values
-y0=0.25
+y0 <- 0.25
 f <- splinefun(params_fit$x, params_fit$y)
 lines.25 <- RootNonlinearInterpolant(params_fit$x, params_fit$y, f, y0)
 
@@ -93,7 +94,7 @@ if(length(lines.25) > 1){
 }
 
 # Find the suitable range values
-y0=0.5
+y0 <- 0.5
 f <- splinefun(params_fit$x, params_fit$y)
 lines.5 <- RootNonlinearInterpolant(params_fit$x, params_fit$y, f, y0)
 
@@ -221,11 +222,11 @@ fit_plot <- ggplot2::ggplot() +
   
   # Plot options
   ggplot2::coord_cartesian(xlim = c(0, 330),
-                           ylim = c(0,1.1),
+                           ylim = c(0, 1.1),
                            expand = FALSE) +
   # ggplot2::ggtitle(label = input$species) +
-  ggplot2::scale_x_continuous(breaks = seq(0,max_x,20)) +
-  ggplot2::scale_y_continuous(breaks = seq(0,1,0.1)) +
+  ggplot2::scale_x_continuous(breaks = seq(0, max_x, 20)) +
+  ggplot2::scale_y_continuous(breaks = seq(0, 1, 0.1)) +
   # ggplot2::xlab(label = subtitle) +
   ggplot2::ylab(NULL) +
   ggplot2::theme_classic(base_size = 16) +

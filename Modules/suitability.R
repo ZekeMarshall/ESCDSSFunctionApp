@@ -7,18 +7,40 @@ suitUI <- function(id) {
     
     withMathJax(), # Initialize mathJax so the equation renders properly
     
-    box(title = NULL,
-        width = 9,
-        height = 560,
-        plotlyOutput(outputId = ns("suitPlot")),
-        collapsible = FALSE
+    tabBox(title = NULL,
+           width = 9,
+           height = 640,
+           collapsible = FALSE,
+           
+           tabPanel(
+             title = "Plot",
+             plotlyOutput(outputId = ns("suitPlot"))
+           ),
+           
+           tabPanel(
+             title = "Manual Scores",
+             textInput(inputId = ns("manual_x"), 
+                       label = "x value", 
+                       value = "0, 20, 60, 100, 120, 160", 
+                       placeholder = "Enter comma separated values, e.g. 4.2"),
+             textInput(inputId = ns("manual_y"), 
+                       label = "y value", 
+                       value = "1, 1, 1, 0.75, 0.5, 0", 
+                       placeholder = "Enter comma separated values, e.g. 4.2"),
+           ),
+           
+           tabPanel(
+             title = "Model Summary",
+             verbatimTextOutput(outputId = ns("modelsummary"))
+           )
+           
     ),
     
     box(title = NULL,
         id = ns("options"),
         # style = '.card-body {overflow-y: scroll;}',
         width = 3,
-        height = 560,
+        height = 640,
         
         # tags$div(
         #   tags$style(HTML(".card-body {overflow-y: scroll;}"))
@@ -54,6 +76,10 @@ suitUI <- function(id) {
         numericInput(inputId = ns("poly_num"),
                      label = "Polynomial Order",
                      value = 2),
+        
+        checkboxInput(inputId = ns("manual_scores"),
+                      label = "Use Manual Scores",
+                      value = FALSE),
         
         checkboxInput(inputId = ns("model_line"),
                       label = "Show Modelled Scores",
@@ -154,13 +180,25 @@ suit <- function(input, output, session, suit_factor, species) {
   
   params <- reactive({
     
-    params <- tidy_scores_v1 |>
+    if(input$manual_scores == TRUE){
       
-      dplyr::filter(factor == input$suit_factor,
-                    species == input$species) |> 
+      x_vals <- extract(input$manual_x)
+      y_vals <- extract(input$manual_y)
       
-      dplyr::rename("x" = "value",
-                    "y" = "score")
+      params <- data.frame(x = x_vals,
+                           y = y_vals)
+      
+    } else if(input$manual_scores == FALSE){
+      
+      params <- tidy_scores_v1 |>
+        
+        dplyr::filter(factor == input$suit_factor,
+                      species == input$species) |> 
+        
+        dplyr::rename("x" = "value",
+                      "y" = "score")
+      
+    }
     
     return(params)
     
@@ -174,13 +212,10 @@ suit <- function(input, output, session, suit_factor, species) {
     
     if(input$model_type == "poly"){
       
-      order <- input$poly_num
-      
-      # lm(data = params(),
-      #    y ~ poly(x, order, raw = TRUE))
+      order <- as.numeric(input$poly_num)
       
       lm(data = params(),
-         y ~ poly(x, order))
+         y ~ poly(x, order, raw = TRUE))
       
     } else if(input$model_type == "log"){
       
@@ -280,7 +315,7 @@ suit <- function(input, output, session, suit_factor, species) {
         NULL
       
       fit_plot <- plotly::ggplotly(fit_plot,
-                                   height = 520,
+                                   height = 600,
                                    tooltip = c("x", "y"))
       
       fit_plot
@@ -320,7 +355,7 @@ suit <- function(input, output, session, suit_factor, species) {
         NULL
       
       fit_plot <- plotly::ggplotly(fit_plot,
-                                   height = 520,
+                                   height = 600,
                                    tooltip = c("x", "y"))
       
       fit_plot
@@ -450,7 +485,7 @@ suit <- function(input, output, session, suit_factor, species) {
         NULL
       
       fit_plot <- plotly::ggplotly(fit_plot,
-                                   height = 520,
+                                   height = 600,
                                    tooltip = c("x", "y"))
       
       fit_plot
@@ -579,7 +614,7 @@ suit <- function(input, output, session, suit_factor, species) {
         NULL
       
       fit_plot <- plotly::ggplotly(fit_plot,
-                                   height = 520,
+                                   height = 600,
                                    tooltip = c("x" = "x", "Score" = "y"))
       
       fit_plot
@@ -699,6 +734,12 @@ suit <- function(input, output, session, suit_factor, species) {
 
 
   })
+  
+  output$modelsummary <- renderPrint(
+    
+    summary(model())
+    
+  )
   
   
   output$downmodel <- downloadHandler(

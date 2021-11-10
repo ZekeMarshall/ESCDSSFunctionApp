@@ -1,3 +1,11 @@
+# https://statsandr.com/blog/a-shiny-app-for-simple-linear-regression-by-hand-and-in-r/
+extract <- function(text) {
+  text <- gsub(" ", "", text)
+  split <- strsplit(text, ",", fixed = FALSE)[[1]]
+  as.numeric(split)
+}
+
+
 # Define shading function
 # Adapted from: https://sebastiansauer.github.io/shade_Normal_curve/
 shade_curve <- function(df, x, y, fill, zstart, zend, alpha){
