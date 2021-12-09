@@ -124,7 +124,7 @@ suitUI <- function(id) {
         height = 80,
         fluidRow(
           column(8,
-                 eqOutput(outputId = ns("ploy_eq"))
+                 uiOutput(outputId = ns("poly_eq"))
           ),
           column(4,
                  eqOutput(outputId = ns("model_r.squared")))
@@ -623,9 +623,27 @@ suit <- function(input, output, session, suit_factor, species) {
     
   })
   
-  output$ploy_eq <- renderEq({
+  output$poly_eq <- renderUI({
     
-    equatiomatic::extract_eq(model(), use_coefs = TRUE, coef_digits = 4) 
+    equation <- equatiomatic::extract_eq(model(), 
+                                         use_coefs = TRUE, 
+                                         coef_digits = 5,
+                                         ital_vars = FALSE)
+   
+    equation <- as.character(equation) 
+    
+    equation <- stringr::str_remove_all(string = equation, pattern = "\\,\\\\\\sorder")
+    
+    equation <- stringr::str_replace_all(string = equation, pattern = "\\\\operatorname", replacement = "\\\\")
+    
+    
+    withMathJax(
+      
+      paste0("$$", equation, "$$")
+      
+    )
+    
+    
     
   })
   
