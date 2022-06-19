@@ -8,7 +8,7 @@ suitUI <- function(id) {
     withMathJax(), # Initialize mathJax so the equation renders properly
     
     tabBox(title = NULL,
-           width = 9,
+           width = 7,
            height = 640,
            collapsible = FALSE,
            
@@ -17,17 +17,17 @@ suitUI <- function(id) {
              plotlyOutput(outputId = ns("suitPlot"))
            ),
            
-           tabPanel(
-             title = "Manual Scores",
-             textInput(inputId = ns("manual_x"), 
-                       label = "x value", 
-                       value = "0, 20, 60, 100, 120, 160", 
-                       placeholder = "Enter comma separated values, e.g. 4.2"),
-             textInput(inputId = ns("manual_y"), 
-                       label = "y value", 
-                       value = "1, 1, 1, 0.75, 0.5, 0", 
-                       placeholder = "Enter comma separated values, e.g. 4.2"),
-           ),
+           # tabPanel(
+           #   title = "Manual Scores",
+           #   textInput(inputId = ns("manual_x"), 
+           #             label = "x value", 
+           #             value = "0, 20, 60, 100, 120, 160", 
+           #             placeholder = "Enter comma separated values, e.g. 4.2"),
+           #   textInput(inputId = ns("manual_y"), 
+           #             label = "y value", 
+           #             value = "1, 1, 1, 0.75, 0.5, 0", 
+           #             placeholder = "Enter comma separated values, e.g. 4.2"),
+           # ),
            
            tabPanel(
              title = "Model Summary",
@@ -37,108 +37,179 @@ suitUI <- function(id) {
     ),
     
     box(title = NULL,
-        id = ns("options"),
+        id = ns("data_values"),
         # style = '.card-body {overflow-y: scroll;}',
-        width = 3,
-        height = 640,
+        width = 2,
+        height = 650,
+        collapsible = FALSE,
+        DT::DTOutput(outputId = ns('data_values_table'))
         
-        # tags$div(
-        #   tags$style(HTML(".card-body {overflow-y: scroll;}"))
-        #   ),
-        # 
-        # tags$div(
-        #   tags$style(HTML(".card-header {height:0px !important;}"))
-        #   ),
-        
-        # tags$style("#md.id-options.card.shiny-bound-input {overflow-y: scroll;}"),
-        
-        # tags$style("#md.id-options {overflow-y: scroll;}"),
-        
-        
-        selectInput(inputId = ns("species"),
-                    label = "Species",
-                    choices = species),
-        
-        selectInput(inputId = ns("suit_factor"),
-                    label = "Suitability Factor",
-                    choices = c(`Moisture Deficit` = "md",
-                                `Accumulated Temperature` = "at",
-                                `Continentality` = "ct",
-                                `Exposure` = "dams",
-                                `Soil Moisture Regime` = "smr",
-                                `Soil Nutrient Regime` = "snr")),
-        
-        selectInput(inputId = ns("model_type"),
-                    label = "Model Type",
-                    choices = c(`Polynomial` = "poly",
-                                `Logarithmic` = "log")),
-        
-        numericInput(inputId = ns("poly_num"),
-                     label = "Polynomial Order",
-                     value = 2),
-        
-        checkboxInput(inputId = ns("manual_scores"),
-                      label = "Use Manual Scores",
-                      value = FALSE),
-        
-        checkboxInput(inputId = ns("model_line"),
-                      label = "Show Modelled Scores",
-                      value = FALSE),
-        
-        checkboxInput(inputId = ns("model_area"),
-                      label = "Show Suitability Ranges",
-                      value = FALSE),
-        
-        checkboxInput(inputId = ns("range01"),
-                      label = "Range 0-1",
-                      value = FALSE),
-        
-        fluidRow(
-          
-          column(6,
-                 downloadButton(outputId = ns("downmodeldata"),
-                                label = "Model Data",
-                                class = "dlButton")),
-          column(6,
-                 downloadButton(outputId = ns("downmodel"),
-                                label = "Model",
-                                class = "dlButton"))
-          
-        ), # Close fluidRow
-        
-        collapsible = FALSE
-        # ) # Closes style div
-      ),
+        ),
+    
+    
+    tabBox(title = NULL,
+           id = ns("options"),
+           # style = '.card-body {overflow-y: scroll;}',
+           width = 3,
+           height = 640,
+           collapsible = FALSE,
+           
+           tabPanel(
+             title = "Options",
+             
+             # tags$div(
+             #   tags$style(HTML(".card-body {overflow-y: scroll;}"))
+             #   ),
+             # 
+             # tags$div(
+             #   tags$style(HTML(".card-header {height:0px !important;}"))
+             #   ),
+             
+             # tags$style("#md.id-options.card.shiny-bound-input {overflow-y: scroll;}"),
+             
+             # tags$style("#md.id-options {overflow-y: scroll;}"),
+             
+             selectInput(inputId = ns("species"),
+                         label = "Species",
+                         choices = species),
+             
+             selectInput(inputId = ns("suit_factor"),
+                         label = "Suitability Factor",
+                         choices = c(`Moisture Deficit` = "md",
+                                     `Accumulated Temperature` = "at",
+                                     `Continentality` = "ct",
+                                     `Exposure` = "dams",
+                                     `Soil Moisture Regime` = "smr",
+                                     `Soil Nutrient Regime` = "snr")),
+             
+             selectInput(inputId = ns("model_type"),
+                         label = "Model Type",
+                         choices = c(`Polynomial` = "poly",
+                                     `Logarithmic` = "log")),
+             
+             numericInput(inputId = ns("poly_num"),
+                          label = "Polynomial Order",
+                          value = 2),
+             
+             checkboxInput(inputId = ns("manual_scores"),
+                           label = "Use Manual Scores",
+                           value = FALSE),
+             
+             checkboxInput(inputId = ns("model_line"),
+                           label = "Show Modelled Scores",
+                           value = FALSE),
+             
+             checkboxInput(inputId = ns("model_area"),
+                           label = "Show Suitability Ranges",
+                           value = FALSE),
+             
+             checkboxInput(inputId = ns("range01"),
+                           label = "Range 0-1",
+                           value = FALSE),
+             
+             fluidRow(
+               
+               column(6,
+                      downloadButton(outputId = ns("downmodeldata"),
+                                     label = "Model Data",
+                                     class = "dlButton")),
+               column(6,
+                      downloadButton(outputId = ns("downmodel"),
+                                     label = "Model",
+                                     class = "dlButton"))
+               
+             ) # Close fluidRow
+             # ) # Closes style div
+           ),
+           
+           tabPanel(
+             
+             title = "Manual Scores",
+             
+             numericInput(inputId = ns("x_val"), label = "X Value", value = 1),
+             numericInput(inputId = ns("y_val"), label = "Y Value", value = 1),
+             # Row selection
+             numericInput(inputId = ns("row.selection"), label = "Select row to be 
+                     deleted", min = 1, max = 100, value = ""),
+             # Add button
+             actionButton(inputId = ns("add.button"), label = "Add", icon = icon("plus")), 
+             # Delete button 
+             actionButton(inputId = ns("delete.button"), label = "Delete", icon = icon("minus")),
+             
+           )
+           
+    ),
     
     box(title = NULL,
         width = 12,
         gt_output(outputId = ns("suitTable")),
         # header = NULL,
         collapsible = FALSE
-    ),
+    )#,
     
-    withMathJax(), # Initialize mathJax so the equation renders properly
-    
-    box(title = NULL,
-        width = 12,
-        height = 80,
-        fluidRow(
-          column(8,
-                 uiOutput(outputId = ns("poly_eq"))
-          ),
-          column(4,
-                 eqOutput(outputId = ns("model_r.squared")))
-        ),
-        # header = NULL,
-        collapsible = FALSE
-    )
+    # withMathJax(), # Initialize mathJax so the equation renders properly
+    # 
+    # box(title = NULL,
+    #     width = 12,
+    #     height = 80,
+    #     fluidRow(
+    #       column(8,
+    #              uiOutput(outputId = ns("poly_eq"))
+    #       ),
+    #       column(4,
+    #              eqOutput(outputId = ns("model_r.squared")))
+    #     ),
+    #     # header = NULL,
+    #     collapsible = FALSE
+    # )
   
     )
 
 }
 
 # Establishes the server module function
-suit <- function(input, output, session, suit_factor, species) {
+suit <- function(input, output, session, 
+                 suit_factor, 
+                 species,
+                 x_val,
+                 y_val,
+                 row.selection,
+                 add.button,
+                 delete.button,
+                 plot_click) {
+  
+  init_df <- data.frame(x = c(0, 20, 60, 100, 120, 160), 
+                        y = c(1, 1, 1, 0.75, 0.5, 0))
+  values <- reactiveValues()
+  values$df <- init_df
+  
+  observeEvent(input$add.button,{
+    
+    newRow <- data.frame(input$x_val, input$y_val)
+    colnames(newRow) <- colnames(values$df)
+    values$df <- rbind(values$df, newRow)
+    
+  })
+  
+  observeEvent(input$delete.button,{
+    
+    cat("deleteEntry\n")
+    if(is.na(input$row.selection)){
+      values$df <- values$df[-nrow(values$df), ]
+    } else {
+      values$df <- values$df[-input$row.selection, ]
+    }
+    
+  })  
+  
+  observeEvent(input$plotly_click,{
+    
+    click_data <- data.frame(x = input$plotly_click$x,
+                             y = input$plotly_click$y)
+
+    values$df <- rbind(values$df, click_data)
+    
+    })
   
   max_x <- reactive({
     if(input$suit_factor == "md"){
@@ -182,11 +253,7 @@ suit <- function(input, output, session, suit_factor, species) {
     
     if(input$manual_scores == TRUE){
       
-      x_vals <- extract(input$manual_x)
-      y_vals <- extract(input$manual_y)
-      
-      params <- data.frame(x = x_vals,
-                           y = y_vals)
+      params <- values$df
       
     } else if(input$manual_scores == FALSE){
       
@@ -203,8 +270,14 @@ suit <- function(input, output, session, suit_factor, species) {
     return(params)
     
     })
-
   
+  output$data_values_table <- DT::renderDT(dplyr::select(.data = params(),
+                                                         "x",
+                                                         "y"),
+                                           rownames = FALSE,
+                                           options = list(dom = 't',
+                                                          columnDefs = list(list(className = 'dt-center', 
+                                                                                 targets = 0:1))))
   
   
   # Create a polynomial model to fit suitability score parameters
@@ -623,35 +696,35 @@ suit <- function(input, output, session, suit_factor, species) {
     
   })
   
-  output$poly_eq <- renderUI({
-    
-    equation <- equatiomatic::extract_eq(model(), 
-                                         use_coefs = TRUE, 
-                                         coef_digits = 5,
-                                         ital_vars = FALSE)
-   
-    equation <- as.character(equation) 
-    
-    equation <- stringr::str_remove_all(string = equation, pattern = "\\,\\\\\\sorder")
-    
-    equation <- stringr::str_replace_all(string = equation, pattern = "\\\\operatorname", replacement = "\\\\")
-    
-    
-    withMathJax(
-      
-      paste0("$$", equation, "$$")
-      
-    )
-    
-    
-    
-  })
-  
-  output$model_r.squared <- renderEq({
-    
-    glue::glue("R.squared: {broom::glance(model())$r.squared}")
-    
-  })
+  # output$poly_eq <- renderUI({
+  #   
+  #   equation <- equatiomatic::extract_eq(model(), 
+  #                                        use_coefs = TRUE, 
+  #                                        coef_digits = 5,
+  #                                        ital_vars = FALSE)
+  #  
+  #   equation <- as.character(equation) 
+  #   
+  #   equation <- stringr::str_remove_all(string = equation, pattern = "\\,\\\\\\sorder")
+  #   
+  #   equation <- stringr::str_replace_all(string = equation, pattern = "\\\\operatorname", replacement = "\\\\")
+  #   
+  #   
+  #   withMathJax(
+  #     
+  #     paste0("$$", equation, "$$")
+  #     
+  #   )
+  #   
+  #   
+  #   
+  # })
+  # 
+  # output$model_r.squared <- renderEq({
+  #   
+  #   glue::glue("R.squared: {broom::glance(model())$r.squared}")
+  #   
+  # })
   
   output$suitTable <- render_gt({
 

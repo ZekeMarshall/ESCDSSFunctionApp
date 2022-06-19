@@ -133,3 +133,24 @@ extract_model_equation <- function(model) {
   return(equation)
   
 }
+
+# From https://stackoverflow.com/questions/56193127/plotly-click-events-from-anywhere-on-the-plot
+plotly_click_js <- "
+    function(el, x, inputName){
+      var id = el.getAttribute('id');
+      var gd = document.getElementById(id);
+      var d3 = Plotly.d3;
+      Plotly.update(id).then(attach);
+        function attach() {
+          gd.addEventListener('click', function(evt) {
+            var xaxis = gd._fullLayout.xaxis;
+            var yaxis = gd._fullLayout.yaxis;
+            var bb = evt.target.getBoundingClientRect();
+            var x = xaxis.p2d(evt.clientX - bb.left);
+            var y = yaxis.p2d(evt.clientY - bb.top);
+            var coordinates = [x, y];
+            Shiny.setInputValue(inputName, coordinates);
+          });
+        };
+  }
+  "

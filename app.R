@@ -37,15 +37,7 @@ ui <- dashboardPage(
             menuItem(
                 text = "Suitability",
                 tabName = "suit"
-            )#,
-            # menuItem(
-            #     text = "New Species",
-            #     tabName = "at"
-            # ),
-            # menuItem(
-            #     text = "Models",
-            #     tabName = "models"
-            # )
+            )
             
         ) # Close sidebarMenu
         
@@ -79,8 +71,8 @@ ui <- dashboardPage(
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
     
-    callModule(module = suit,
-               id = "suit.id")
+  callModule(module = suit,
+             id = "suit.id")
     
     
     
