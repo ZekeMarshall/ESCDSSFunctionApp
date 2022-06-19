@@ -37,15 +37,15 @@ ui <- dashboardPage(
             menuItem(
                 text = "Suitability",
                 tabName = "suit"
-            ),
-            menuItem(
-                text = "New Species",
-                tabName = "at"
-            ),
-            menuItem(
-                text = "Models",
-                tabName = "models"
-            )
+            )#,
+            # menuItem(
+            #     text = "New Species",
+            #     tabName = "at"
+            # ),
+            # menuItem(
+            #     text = "Models",
+            #     tabName = "models"
+            # )
             
         ) # Close sidebarMenu
         
