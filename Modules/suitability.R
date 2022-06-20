@@ -175,41 +175,8 @@ suit <- function(input, output, session,
                  y_val,
                  row.selection,
                  add.button,
-                 delete.button,
-                 plot_click) {
+                 delete.button) {
   
-  init_df <- data.frame(x = c(0, 20, 60, 100, 120, 160), 
-                        y = c(1, 1, 1, 0.75, 0.5, 0))
-  values <- reactiveValues()
-  values$df <- init_df
-  
-  observeEvent(input$add.button,{
-    
-    newRow <- data.frame(input$x_val, input$y_val)
-    colnames(newRow) <- colnames(values$df)
-    values$df <- rbind(values$df, newRow)
-    
-  })
-  
-  observeEvent(input$delete.button,{
-    
-    cat("deleteEntry\n")
-    if(is.na(input$row.selection)){
-      values$df <- values$df[-nrow(values$df), ]
-    } else {
-      values$df <- values$df[-input$row.selection, ]
-    }
-    
-  })  
-  
-  observeEvent(input$plotly_click,{
-    
-    click_data <- data.frame(x = input$plotly_click$x,
-                             y = input$plotly_click$y)
-
-    values$df <- rbind(values$df, click_data)
-    
-    })
   
   max_x <- reactive({
     if(input$suit_factor == "md"){
@@ -249,11 +216,36 @@ suit <- function(input, output, session,
     
   })
   
+  
+  init_df <- data.frame(x = c(0, 20, 60, 100, 120, 160), 
+                        y = c(1, 1, 1, 0.75, 0.5, 0))
+  manual_params <- reactiveValues()
+  manual_params$df <- init_df
+  
+  observeEvent(input$add.button,{
+    
+    newRow <- data.frame(input$x_val, input$y_val)
+    colnames(newRow) <- colnames(manual_params$df)
+    manual_params$df <- rbind(manual_params$df, newRow)
+    
+  })
+  
+  observeEvent(input$delete.button,{
+    
+    cat("deleteEntry\n")
+    if(is.na(input$row.selection)){
+      manual_params$df <- manual_params$df[-nrow(manual_params$df), ]
+    } else {
+      manual_params$df <- manual_params$df[-input$row.selection, ]
+    }
+    
+  })  
+  
   params <- reactive({
     
     if(input$manual_scores == TRUE){
       
-      params <- values$df
+      params <- manual_params$df
       
     } else if(input$manual_scores == FALSE){
       
@@ -270,14 +262,30 @@ suit <- function(input, output, session,
     return(params)
     
     })
-  
+
   output$data_values_table <- DT::renderDT(dplyr::select(.data = params(),
                                                          "x",
                                                          "y"),
                                            rownames = FALSE,
                                            options = list(dom = 't',
-                                                          columnDefs = list(list(className = 'dt-center', 
+                                                          columnDefs = list(list(className = 'dt-center',
                                                                                  targets = 0:1))))
+  # clickposition_history <- reactiveVal(manual_params)
+  # 
+  # observeEvent(input$clickposition, {
+  #   clickposition_history(rbind(clickposition_history(), input$clickposition))
+  # })
+  # 
+  # myPlotProxy <- plotlyProxy("suitPlot", session)
+  # 
+  # observe({
+  #   plotlyProxyInvoke(myPlotProxy, "restyle", list(x = list(clickposition_history()$x), 
+  #                                                  y = list(clickposition_history()$y)))
+  # })
+  # 
+  # output$click <- renderPrint({
+  #   clickposition_history()
+  # })
   
   
   # Create a polynomial model to fit suitability score parameters
@@ -389,7 +397,8 @@ suit <- function(input, output, session,
       
       fit_plot <- plotly::ggplotly(fit_plot,
                                    height = 600,
-                                   tooltip = c("x", "y"))
+                                   tooltip = c("x", "y")) %>%
+        htmlwidgets::onRender(js, data = "clickposition")
       
       fit_plot
       
@@ -429,7 +438,8 @@ suit <- function(input, output, session,
       
       fit_plot <- plotly::ggplotly(fit_plot,
                                    height = 600,
-                                   tooltip = c("x", "y"))
+                                   tooltip = c("x", "y")) %>%
+        htmlwidgets::onRender(js, data = "clickposition")
       
       fit_plot
       
@@ -559,7 +569,8 @@ suit <- function(input, output, session,
       
       fit_plot <- plotly::ggplotly(fit_plot,
                                    height = 600,
-                                   tooltip = c("x", "y"))
+                                   tooltip = c("x", "y")) %>%
+        htmlwidgets::onRender(js, data = "clickposition")
       
       fit_plot
       
@@ -688,7 +699,8 @@ suit <- function(input, output, session,
       
       fit_plot <- plotly::ggplotly(fit_plot,
                                    height = 600,
-                                   tooltip = c("x" = "x", "Score" = "y"))
+                                   tooltip = c("x" = "x", "Score" = "y")) %>%
+        htmlwidgets::onRender(js, data = "clickposition")
       
       fit_plot
       

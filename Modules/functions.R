@@ -135,7 +135,7 @@ extract_model_equation <- function(model) {
 }
 
 # From https://stackoverflow.com/questions/56193127/plotly-click-events-from-anywhere-on-the-plot
-plotly_click_js <- "
+js <- "
     function(el, x, inputName){
       var id = el.getAttribute('id');
       var gd = document.getElementById(id);
