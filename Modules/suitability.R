@@ -17,18 +17,6 @@ suitUI <- function(id) {
              plotlyOutput(outputId = ns("suitPlot"))
            ),
            
-           # tabPanel(
-           #   title = "Manual Scores",
-           #   textInput(inputId = ns("manual_x"), 
-           #             label = "x value", 
-           #             value = "0, 20, 60, 100, 120, 160", 
-           #             placeholder = "Enter comma separated values, e.g. 4.2"),
-           #   textInput(inputId = ns("manual_y"), 
-           #             label = "y value", 
-           #             value = "1, 1, 1, 0.75, 0.5, 0", 
-           #             placeholder = "Enter comma separated values, e.g. 4.2"),
-           # ),
-           
            tabPanel(
              title = "Model Summary",
              verbatimTextOutput(outputId = ns("modelsummary"))
@@ -266,7 +254,7 @@ suit <- function(input, output, session,
   output$data_values_table <- DT::renderDT(dplyr::select(.data = params(),
                                                          "x",
                                                          "y"),
-                                           rownames = FALSE,
+                                           rownames = TRUE,
                                            options = list(dom = 't',
                                                           columnDefs = list(list(className = 'dt-center',
                                                                                  targets = 0:1))))
